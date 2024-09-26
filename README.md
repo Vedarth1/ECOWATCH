@@ -1,36 +1,88 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PUC Project Frontend
+
+This repository contains the frontend code for the PUC (Pollution Under Control) Project, implemented as a Progressive Web App (PWA) using Next.js 14.
 
 ## Getting Started
 
-First, run the development server:
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### Prerequisites
+
+- Node.js 14.x or later
+- npm
+
+### Installation
+
+1. Clone the repository:
+   ```
+   git clone https://github.com/Vedarth1/ECOWATCH
+   cd ECOWATCH
+   ```
+
+2. Install dependencies:
+   ```
+   npm install
+   ```
+
+3. Run the development server:
+   ```
+   npm run dev
+   ```
+
+4. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## PWA Features
+
+This project is set up as a Progressive Web App, which means it can be installed on mobile devices and desktops, and can work offline. Key PWA features include:
+
+- Offline functionality
+- Install prompts on compatible devices
+- Fast loading times
+- Push notifications for important updates
+
+## Built With
+
+- [Next.js 14](https://nextjs.org/) - The React Framework for Production
+- [React](https://reactjs.org/) - A JavaScript library for building user interfaces
+- [next-pwa](https://github.com/shadowwalker/next-pwa) - PWA plugin for Next.js
+
+## Features
+
+- Progressive Web App functionality
+- Real-time updates of vehicle information
+- Dynamic dashboard for authorities
+- Vehicle status monitoring
+- Detailed reports and analytics
+- Search functionality for specific vehicles
+- User authentication and authorization
+- Responsive design for various device sizes
+- Interactive charts and graphs for data visualization
+- Notification center for important alerts
+- User activity logs
+- Settings panel for application customization
+
+## Deployment
+
+To deploy your Next.js PWA, you can use services like Vercel, which is optimized for Next.js:
+
+```
+vercel
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Alternatively, you can build the project and deploy it to any static hosting service:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+npm run build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Then deploy the `out` directory to your hosting service.
 
-## Learn More
+## Performance Optimization
 
-To learn more about Next.js, take a look at the following resources:
+This application is optimized for performance:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Server-side rendering for faster initial load
+- Code splitting and lazy loading of components
+- Optimized images and assets
+- Efficient state management
+- Memoization of expensive computations

@@ -1,11 +1,10 @@
-"use client"; // This tells Next.js that this is a Client Component
+"use client";
 
 import localFont from "next/font/local";
 import "./globals.css";
 import BottomNav from "../components/ui/bottomNav";
-import { FaBars, FaUserPlus } from "react-icons/fa"; // Import icons
-import { useRouter } from "next/navigation"; // useRouter for client-side navigation
-
+import { FaBars, FaUserPlus, FaCamera } from "react-icons/fa"; 
+import { useRouter } from "next/navigation"; 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -22,7 +21,7 @@ export default function ClientRootLayout({
 }: {
   children: React.ReactNode; 
 }) {
-  const router = useRouter(); 
+  const router = useRouter(); // Initialize the router for client-side navigation
 
   return (
     <html lang="en">
@@ -37,21 +36,30 @@ export default function ClientRootLayout({
               <FaBars />
             </button>
 
-            <h1 className="text-lg font-bold text-center flex-grow">ECOWATCH</h1>
+            <h1 className="text-lg font-bold text-center flex-grow">
+              ECOWATCH
+            </h1>
+
+            {/* Camera Icon */}
+            <button
+              className="text-white text-2xl mx-2" 
+              onClick={() => router.push("/camera")} 
+            >
+              <FaCamera />
+            </button>
 
             {/* Register Icon */}
             <button
-              className="text-white text-2xl"
-              onClick={() => router.push("/register")} // Navigate to /register route on click
+              className="text-white text-2xl mx-2" 
+              onClick={() => router.push("/register")} 
             >
               <FaUserPlus />
             </button>
           </header>
 
           {/* Main Content */}
-          <main className="flex-grow p-4 overflow-auto">{children}</main>
+          <main className="flex-grow p-4 overflow-auto mb-16">{children}</main>
 
-          {/* Bottom Navigation */}
           <BottomNav />
         </div>
       </body>

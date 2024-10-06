@@ -1,34 +1,18 @@
-"use client"; 
+"use client"; // Client-side component
 
 import { useState } from "react";
-import { useRouter } from "next/navigation"; 
 import { FaTachometerAlt, FaShieldAlt, FaUserTie } from "react-icons/fa";
 
 export default function BottomNav() {
   const [activeTab, setActiveTab] = useState("dashboard");
-  const router = useRouter(); 
-
-  // Function to handle tab click and navigate
-  const handleTabClick = (tab: string) => {
-    setActiveTab(tab);
-
-    // Navigate to the respective route
-    if (tab === "dashboard") {
-      router.push("/dashboard"); 
-    } else if (tab === "police") {
-      router.push("/police"); // 
-    } else if (tab === "policymakers") {
-      router.push("/policyMaker"); 
-    }
-  };
 
   return (
-    <nav className="flex justify-around bg-gray-800 text-white py-3">
+    <nav className="fixed bottom-0 left-0 w-full bg-gray-800 text-white py-3 flex justify-around">
       <button
         className={`flex flex-col items-center ${
           activeTab === "dashboard" ? "text-green-500" : ""
         }`}
-        onClick={() => handleTabClick("dashboard")}
+        onClick={() => setActiveTab("dashboard")}
       >
         <FaTachometerAlt className="text-2xl" />
       </button>
@@ -37,7 +21,7 @@ export default function BottomNav() {
         className={`flex flex-col items-center ${
           activeTab === "police" ? "text-green-500" : ""
         }`}
-        onClick={() => handleTabClick("police")}
+        onClick={() => setActiveTab("police")}
       >
         <FaShieldAlt className="text-2xl" />
       </button>
@@ -46,7 +30,7 @@ export default function BottomNav() {
         className={`flex flex-col items-center ${
           activeTab === "policymakers" ? "text-green-500" : ""
         }`}
-        onClick={() => handleTabClick("policymakers")}
+        onClick={() => setActiveTab("policymakers")}
       >
         <FaUserTie className="text-2xl" />
       </button>

@@ -1,7 +1,7 @@
 // pages/login.tsx
 import React from 'react';
 import TextField from '../../../components/ui/textField';
-import Theme from '../../../../styles/theme';
+import Theme from '../../../styles/theme';
 import Button from '@/components/ui/Button';
 
 const LoginPage: React.FC = () => {

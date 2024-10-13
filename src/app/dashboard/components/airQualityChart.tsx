@@ -1,9 +1,24 @@
-// components/AirQualityChart.tsx
+"use client"
 import React from 'react';
 import { Line } from 'react-chartjs-2';
-import { Chart as ChartJS, LineElement, PointElement, LinearScale, Title, Tooltip } from 'chart.js';
+import {
+  Chart as ChartJS,
+  LineElement,
+  PointElement,
+  LinearScale,
+  Title,
+  Tooltip,
+  CategoryScale // Add this import
+} from 'chart.js';
 
-ChartJS.register(LineElement, PointElement, LinearScale, Title, Tooltip);
+ChartJS.register(
+  LineElement,
+  PointElement,
+  LinearScale,
+  Title,
+  Tooltip,
+  CategoryScale // Register CategoryScale
+);
 
 const AirQualityChart: React.FC = () => {
   // Sample data for the chart
@@ -30,6 +45,7 @@ const AirQualityChart: React.FC = () => {
     },
     scales: {
       x: {
+        type: 'category', // Specify the scale type
         title: {
           display: true,
           text: 'Time',

@@ -1,20 +1,28 @@
 import React from 'react';
 
-const CountCard: React.FC = () => {
+const CounterCard = ({ stepsCount, averageSteps }) => {
   return (
-    <div className="flex justify-center items-center h-screen">
-      <div className="relative w-56 h-56 rounded-full bg-gradient-to-t from-[#1e81b0] to-black flex items-center justify-center shadow-lg">
-        <div className="absolute w-44 h-44 rounded-full bg-[#141414] flex flex-col justify-center items-center text-white">
-          <div className="text-[#00bfff] text-2xl mb-2">
-            <i className="fas fa-walking"></i>
-          </div>
-          <div className="text-5xl font-bold">9,592</div>
-          <div className="text-lg text-gray-400">6,967</div>
-          <div className="text-xs text-gray-500 mt-2">7 DAYS AVG</div>
+    <div className="bg-black text-white p-2 rounded-lg w-full">
+      <div className="relative">
+        <svg className="w-32 h-32 mx-auto" viewBox="0 0 100 100">
+          <circle 
+            cx="50" 
+            cy="50" 
+            r="45" 
+            fill="none" 
+            stroke="currentColor" 
+            className="text-cyan-400" 
+            strokeWidth="2"
+          />
+        </svg>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+          <div className="text-2xl font-bold">{stepsCount.toLocaleString()}</div>
+          <div className="text-xs text-gray-400">{averageSteps.toLocaleString()}</div>
+          <div className="text-xs text-gray-500">Valid</div>
         </div>
       </div>
     </div>
   );
 };
 
-export default CountCard;
+export default CounterCard;

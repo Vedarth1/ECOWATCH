@@ -6,6 +6,9 @@ import BottomNav from "../components/ui/bottomNav";
 import { FaBars, FaUserPlus, FaCamera } from "react-icons/fa"; 
 import { useRouter } from "next/navigation"; 
 import { useState } from "react";
+import dynamic from 'next/dynamic';
+
+const CameraComponent = dynamic(() => import('../components/utils/cameraUtility'), { ssr: false });
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -25,6 +28,7 @@ export default function ClientRootLayout({
 }) {
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -32,6 +36,51 @@ export default function ClientRootLayout({
 
   const closeSidebar = () => {
     setIsSidebarOpen(false);
+  };
+
+  const openCamera = () => {
+    setIsCameraOpen(true);
+  };
+
+  const closeCamera = () => {
+    setIsCameraOpen(false);
+  };
+
+  const handleImageCapture = async (imageSrc: string | URL | Request) => {
+    setIsCameraOpen(false);
+    router.push('/camera');
+    // Convert base64 to blob
+    const base64Response = await fetch(imageSrc);
+    const blob = await base64Response.blob();
+
+    await sendImageToServer(blob);
+    
+  };
+
+  const sendImageToServer = async (blob: Blob) => {
+    // Create FormData and append the image
+    const formData = new FormData();
+    formData.append('file', blob, 'image.jpg');
+
+
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/puc/process_image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Image processed successfully:', result);
+        // Handle the response as needed, e.g., show a success message or update UI
+      } else {
+        console.error('Failed to process image');
+        // Handle the error, e.g., show an error message to the user
+      }
+    } catch (error) {
+      console.error('Error sending image:', error);
+      // Handle network errors or other exceptions
+    }
   };
 
   return (
@@ -44,7 +93,7 @@ export default function ClientRootLayout({
               <FaBars />
             </button>
             <h1 className="text-lg font-bold text-center flex-grow">ECOWATCH</h1>
-            <button className="text-white text-2xl mx-2" onClick={() => router.push("/camera")}>
+            <button className="text-white text-2xl mx-2" onClick={openCamera}>
               <FaCamera />
             </button>
             <button className="text-white text-2xl mx-2" onClick={() => router.push("/register")}>
@@ -57,7 +106,7 @@ export default function ClientRootLayout({
             <div className="fixed inset-0 bg-black bg-opacity-70 z-30" onClick={closeSidebar}></div>
           )}
 
-          {/* Sidebar - adjusted width to 30% of screen */}
+          {/* Sidebar */}
           <div
             className={`fixed top-0 left-0 w-3/10 max-w-xs h-full bg-black-700 text-white p-4 z-40 transform transition-transform duration-300 ease-in-out ${
               isSidebarOpen ? "translate-x-0" : "-translate-x-full"
@@ -89,12 +138,17 @@ export default function ClientRootLayout({
             </ul>
           </div>
 
-          {/* Main Content - adjust opacity when sidebar is open */}
+          {/* Main Content */}
           <main className={`flex-grow p-4 overflow-auto mb-16 z-10 transition-opacity duration-300 ${isSidebarOpen ? 'opacity-30' : 'opacity-100'}`}>
             {children}
           </main>
 
           <BottomNav />
+
+          {/* Camera Component */}
+          {isCameraOpen && (
+            <CameraComponent onCapture={handleImageCapture} onClose={closeCamera} />
+          )}
         </div>
       </body>
     </html>

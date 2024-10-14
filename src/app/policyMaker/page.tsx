@@ -1,8 +1,9 @@
 import React from 'react'
+import Reports from './components/reports'
 
 const policyMaker = () => {
   return (
-    <div>policyMakers</div>
+    <Reports/>
   )
 }
 

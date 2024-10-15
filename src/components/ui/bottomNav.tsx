@@ -29,7 +29,7 @@ export default function BottomNav() {
         className={`flex flex-col items-center ${
           activeTab === "police" ? "text-green-500" : ""
         }`}
-        onClick={() => handleNavigation("police", "/camera")}
+        onClick={() => handleNavigation("police", "/police")}
       >
         <FaShieldAlt className="text-2xl" />
       </button>

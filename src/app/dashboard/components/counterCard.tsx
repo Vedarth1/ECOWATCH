@@ -1,6 +1,6 @@
 import React from 'react';
 
-const CounterCard = ({ stepsCount, averageSteps }) => {
+const CounterCard = ({ count, name }) => {
   return (
     <div className="bg-black text-white p-2 rounded-lg w-full">
       <div className="relative">
@@ -16,9 +16,8 @@ const CounterCard = ({ stepsCount, averageSteps }) => {
           />
         </svg>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-          <div className="text-2xl font-bold">{stepsCount.toLocaleString()}</div>
-          <div className="text-xs text-gray-400">{averageSteps.toLocaleString()}</div>
-          <div className="text-xs text-gray-500">Valid</div>
+          <div className="text-2xl font-bold">{count.toLocaleString()}</div>
+          <div className="text-xs text-gray-500">{name}</div>
         </div>
       </div>
     </div>

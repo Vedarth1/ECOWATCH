@@ -112,11 +112,11 @@ export default function ClientRootLayout({
                 <button className="text-white text-2xl" onClick={closeSidebar}>&times;</button>
               </div>
               <ul className="space-y-4">
-                {[ 
+                {[
                   { name: "Home", path: "/" },
-                  { name: "About", path: "./(menubar)/about/page.tsx" },
-                  { name: "Privacy Policy", path: "/privacy-policy" },
-                  { name: "User Guide", path: "/user-guide" },
+                  { name: "About", path: "/about" },
+                  { name: "Privacy Policy", path: "/Privacy" },
+                  { name: "User Guide", path: "/userGuide" },
                 ].map((item) => (
                   <li key={item.name}>
                     <button 

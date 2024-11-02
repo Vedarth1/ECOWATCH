@@ -1,7 +1,7 @@
 // styles/theme.ts
 const Theme = {
     colors: {
-      background: '#98c196',
+      background: '#000000',
       text: '#333',
       inputBackground: '#d3d3d3',
       buttonBackground: '#333',

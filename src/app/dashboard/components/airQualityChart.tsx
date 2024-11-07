@@ -1,5 +1,5 @@
 "use client"
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -8,8 +8,9 @@ import {
   LinearScale,
   Title,
   Tooltip,
-  CategoryScale // Add this import
+  CategoryScale
 } from 'chart.js';
+import { useSensorSocket } from '../../../hooks/useSensorSocket';
 
 ChartJS.register(
   LineElement,
@@ -17,35 +18,54 @@ ChartJS.register(
   LinearScale,
   Title,
   Tooltip,
-  CategoryScale // Register CategoryScale
+  CategoryScale
 );
 
 const AirQualityChart: React.FC = () => {
-  // Sample data for the chart
-  const data = {
-    labels: ['12AM', '3AM', '6AM', '9AM', '12PM'], // X-axis labels
+  const { sensorData, allReadings } = useSensorSocket();
+  const [chartData, setChartData] = useState({
+    labels: [],
     datasets: [
       {
-        label: 'Air Quality',
-        data: [50, 60, 55, 70, 65], // Sample air quality data
+        label: 'PPM',
+        data: [],
         fill: false,
         borderColor: 'rgba(75, 192, 192, 1)',
         tension: 0.1,
       },
     ],
-  };
+  });
 
-  // Options for the chart
+  useEffect(() => {
+    if (allReadings.length > 0) {
+      const recentReadings = allReadings.slice(-4);
+      const labels = recentReadings.map(reading => new Date(reading.timestamp).toLocaleTimeString().slice(0, -3)); // Format the time without seconds
+      const data = recentReadings.map(reading => reading.ppm);
+      setChartData({
+        labels,
+        datasets: [
+          {
+            label: 'PPM',
+            data,
+            fill: false,
+            borderColor: 'rgba(75, 192, 192, 1)',
+            tension: 0.1,
+          },
+        ],
+      });
+    }
+  }, [allReadings]);
+
   const options = {
     responsive: true,
     plugins: {
       legend: {
-        display: false, // Hide the legend
+        display: false,
       },
     },
     scales: {
       x: {
-        type: 'category', // Specify the scale type
+        type: 'category',
         title: {
           display: true,
           text: 'Time',
@@ -54,10 +74,10 @@ const AirQualityChart: React.FC = () => {
       y: {
         title: {
           display: true,
-          text: 'Air Quality Index',
+          text: 'PPM',
         },
         min: 0,
-        max: 100,
+        // max: 100, // Adjust the max value as per your data
       },
     },
   };
@@ -65,8 +85,12 @@ const AirQualityChart: React.FC = () => {
   return (
     <div style={{ width: '100%', maxWidth: '600px', margin: '0 auto' }}>
       <h2 style={{ textAlign: 'center' }}>Air Quality</h2>
-      <Line data={data} options={options} />
-      <p style={{ textAlign: 'center', margin: '10px 0' }}>Today +20%</p>
+      <Line data={chartData} options={options} />
+      {sensorData && (
+        <p style={{ textAlign: 'center', margin: '10px 0' }}>
+          Current PPM: {sensorData.ppm.toFixed(2)}
+        </p>
+      )}
     </div>
   );
 };

@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { AlertCircle, Loader } from 'lucide-react';
 
 interface SensorData {
   rs_ro_ratio: number;
@@ -25,7 +24,7 @@ interface UseSensorSocketReturn {
   latency: number;
 }
 
-const SOCKET_URL = 'ws://192.168.34.62:3001';
+const SOCKET_URL = 'ws://192.168.34.249:3001';
 const RECONNECT_DELAY = 5000;
 const PING_INTERVAL = 15000;
 

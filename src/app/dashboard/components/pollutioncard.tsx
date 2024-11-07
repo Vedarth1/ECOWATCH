@@ -1,6 +1,6 @@
 import React from 'react';
 import useSensorSocket from '@/hooks/useSensorSocket';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Loader } from 'lucide-react';
 
 const PollutionCard = () => {
   const { 
@@ -54,12 +54,13 @@ const PollutionCard = () => {
           </div>
         ) : !isConnected ? (
           <div className="flex flex-col items-center gap-2">
-            <div className="animate-pulse text-gray-400">
+            <Loader className="animate-spin" size={24} />
+            <div className="text-gray-400">
               Connecting to sensor...
             </div>
           </div>
         ) : !sensorData ? (
-          <div className="animate-pulse">
+          <div className="animate-pulse text-gray-400">
             Waiting for data...
           </div>
         ) : (

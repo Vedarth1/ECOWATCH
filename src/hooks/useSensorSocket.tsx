@@ -1,7 +1,6 @@
-// hooks/useSensorSocket.tsx
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { AlertCircle, Loader } from 'lucide-react';
 
-// Types matching your exact backend data structure
 interface SensorData {
   rs_ro_ratio: number;
   ppm: number;
@@ -10,7 +9,10 @@ interface SensorData {
 
 interface WebSocketMessage {
   type: string;
-  data: SensorData;
+  data?: SensorData;
+  message?: string;
+  clientId?: string;
+  timestamp?: number;
 }
 
 interface UseSensorSocketReturn {
@@ -20,11 +22,12 @@ interface UseSensorSocketReturn {
   connectionStatus: 'connected' | 'disconnected' | 'connecting';
   reconnect: () => void;
   allReadings: SensorData[];
+  latency: number;
 }
 
-// Update this URL to match your Express server's address
-const SOCKET_URL = 'ws://192.168.15.62:3001'; // Match your ESP8266 IP
+const SOCKET_URL = 'ws://192.168.34.62:3001';
 const RECONNECT_DELAY = 5000;
+const PING_INTERVAL = 15000;
 
 export const useSensorSocket = (): UseSensorSocketReturn => {
   const [sensorData, setSensorData] = useState<SensorData | null>(null);
@@ -32,65 +35,104 @@ export const useSensorSocket = (): UseSensorSocketReturn => {
   const [error, setError] = useState<string | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'connecting'>('connecting');
   const [allReadings, setAllReadings] = useState<SensorData[]>([]);
+  const [latency, setLatency] = useState<number>(0);
 
   const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const pingTimeoutRef = useRef<ReturnType<typeof setInterval>>();
+  const pingStartTimeRef = useRef<number>();
+
+  const sendPing = useCallback(() => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      pingStartTimeRef.current = Date.now();
+      wsRef.current.send(JSON.stringify({ type: 'ping' }));
+    }
+  }, []);
+
+  const startPingInterval = useCallback(() => {
+    if (pingTimeoutRef.current) {
+      clearInterval(pingTimeoutRef.current);
+    }
+    pingTimeoutRef.current = setInterval(sendPing, PING_INTERVAL);
+    sendPing(); // Send initial ping
+  }, [sendPing]);
+
+  const handleWebSocketMessage = useCallback((message: WebSocketMessage) => {
+    console.log("WebSocket message received:", message); // Add this line
+    try {
+      switch (message.type) {
+        case 'gas_detection':
+          if (message.data) {
+            setSensorData(message.data);
+            setAllReadings(prev => [message.data, ...prev].slice(0, 100));
+          }
+          break;
+        case 'pong':
+          if (message.timestamp && pingStartTimeRef.current) {
+            setLatency(Date.now() - pingStartTimeRef.current);
+          }
+          break;
+        case 'connection':
+          console.log('Connection established:', message.message);
+          break;
+        default:
+          console.log('Received unknown message type:', message.type);
+      }
+    } catch (error) {
+      console.error('Error parsing WebSocket message:', error);
+      setError('Failed to parse message data');
+    }
+  }, []);
+  
+
+  const handleWebSocketClose = useCallback(() => {
+    console.log('Disconnected from sensor WebSocket');
+    setIsConnected(false);
+    setConnectionStatus('disconnected');
+
+    if (pingTimeoutRef.current) {
+      clearInterval(pingTimeoutRef.current);
+    }
+
+    reconnectTimeoutRef.current = setTimeout(() => {
+      connect();
+    }, RECONNECT_DELAY);
+  }, []);
+
+  const handleWebSocketError = useCallback((event: Event) => {
+    console.error('WebSocket error:', event);
+    setError('WebSocket connection error');
+    setConnectionStatus('disconnected');
+  }, []);
 
   const connect = useCallback(() => {
     try {
-      if (wsRef.current) {
-        wsRef.current.close();
-      }
-
       setConnectionStatus('connecting');
-      
+
       const ws = new WebSocket(SOCKET_URL);
       wsRef.current = ws;
 
-      ws.onopen = () => {
+      ws.addEventListener('open', () => {
         console.log('Connected to sensor WebSocket');
         setIsConnected(true);
         setConnectionStatus('connected');
         setError(null);
-      };
+        startPingInterval();
+      });
 
-      ws.onmessage = (event: MessageEvent) => {
-        try {
-          const message: WebSocketMessage = JSON.parse(event.data);
-          console.log('Received WebSocket message:', message); // Debug log
-          
-          if (message.type === 'gas_detection') {
-            setSensorData(message.data);
-            setAllReadings(prev => [message.data, ...prev].slice(0, 100));
-          }
-        } catch (error) {
-          console.error('Error parsing sensor data:', error);
-          setError('Failed to parse sensor data');
-        }
-      };
+      ws.addEventListener('message', (event) => {
+        const message: WebSocketMessage = JSON.parse(event.data);
+        handleWebSocketMessage(message);
+      });
 
-      ws.onclose = () => {
-        console.log('Disconnected from sensor WebSocket');
-        setIsConnected(false);
-        setConnectionStatus('disconnected');
-        
-        reconnectTimeoutRef.current = setTimeout(() => {
-          connect();
-        }, RECONNECT_DELAY);
-      };
-
-      ws.onerror = (event) => {
-        console.error('WebSocket error:', event);
-        setError('WebSocket connection error');
-        setConnectionStatus('disconnected');
-      };
-
+      ws.addEventListener('close', handleWebSocketClose);
+      ws.addEventListener('error', handleWebSocketError);
     } catch (error) {
       console.error('Failed to connect to WebSocket:', error);
       setError('Failed to connect to sensor');
       setConnectionStatus('disconnected');
     }
-  }, []);
+  }, [startPingInterval, handleWebSocketMessage, handleWebSocketClose, handleWebSocketError]);
 
   useEffect(() => {
     connect();
@@ -101,6 +143,9 @@ export const useSensorSocket = (): UseSensorSocketReturn => {
       }
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
+      }
+      if (pingTimeoutRef.current) {
+        clearInterval(pingTimeoutRef.current);
       }
     };
   }, [connect]);
@@ -118,7 +163,8 @@ export const useSensorSocket = (): UseSensorSocketReturn => {
     error,
     connectionStatus,
     reconnect,
-    allReadings
+    allReadings,
+    latency
   };
 };
 

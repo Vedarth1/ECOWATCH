@@ -34,7 +34,8 @@ export const WebSocketProvider: FC<{ children: ReactNode }> = ({ children }) => 
       setValidationResponse({
         message: "PUC Validation Result",
         response: data.data,
-        status: "success", 
+        status: "success",
+        length: 0
       });
     });
     

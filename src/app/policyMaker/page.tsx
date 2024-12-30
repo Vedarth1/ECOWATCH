@@ -1,7 +1,6 @@
 import React from 'react';
 import Reports from './components/reports';
 import Counts from './components/counts';
-import AirQualityChart from './components/airQuality';
 
 const PolicyMaker = () => {
   const metrics = [
@@ -57,7 +56,6 @@ const PolicyMaker = () => {
         </div>
         <br />
         <br />
-        <AirQualityChart/>
       </div>
     </div>
   );

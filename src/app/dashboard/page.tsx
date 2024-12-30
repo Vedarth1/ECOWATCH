@@ -1,8 +1,6 @@
 'use client'
 import React, { useState, useEffect, useCallback } from "react";
 import CounterCard from "./components/counterCard";
-import AirQualityChart from "./components/airQualityChart";
-import PollutionCard from "./components/pollutioncard";
 import { useWebSocketContext } from "../../context/WebSocketContext";
 
 const Dashboard = () => {
@@ -46,10 +44,6 @@ const Dashboard = () => {
   // Function to divide counts by 2 and round down to ensure integer values
   const getAdjustedCount = (count: number) => Math.floor(count / 2);
 
-  const pollutants = [
-    { ppmValue: 25.4, pollutantName: "Carbon Monoxide (CO)" },
-  ];
-
   return (
     <div className="bg-black min-h-screen p-4">
       <div className="text-center">
@@ -64,20 +58,6 @@ const Dashboard = () => {
       </div>
 
       <div className="mt-8">
-        <AirQualityChart />
-      </div>
-
-      <div className="mt-8">
-        <h2 className="text-lg text-center font-semibold text-white mb-4">Current Pollution Levels</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {pollutants.map((pollutant, index) => (
-            <PollutionCard
-              key={index}
-              ppmValue={pollutant.ppmValue}
-              pollutantName={pollutant.pollutantName}
-            />
-          ))}
-        </div>
       </div>
     </div>
   );

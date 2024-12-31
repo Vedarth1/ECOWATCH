@@ -25,7 +25,7 @@ interface UseSensorSocketReturn {
   latency: number;
 }
 
-const SOCKET_URL = 'ws://192.168.34.62:3001';
+const SOCKET_URL = 'ws://192.168.147.62:3001';
 const RECONNECT_DELAY = 5000;
 const PING_INTERVAL = 15000;
 

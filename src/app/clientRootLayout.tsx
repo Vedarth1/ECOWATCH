@@ -63,10 +63,16 @@ export default function ClientRootLayout({
     const formData = new FormData();
     formData.append('file', blob, 'image.jpg');
 
+    // Get the token from localStorage
+    const token = localStorage.getItem('token');
+
     try {
       const response = await fetch('http://localhost:8000/api/puc', {
         method: 'POST',
         body: formData,
+        headers: {
+          Authorization: token ? `Bearer ${token}` : '', // Add Authorization header with token
+        },
       });
 
       if (response.ok) {
@@ -85,7 +91,7 @@ export default function ClientRootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <WebSocketProvider>
           <div className="flex flex-col h-screen">
-            <header className="flex justify-between items-center bg-black-600 text-white p-4 z-20 relative">
+            <header className="flex justify-between items-center bg-black text-white p-4 z-20 relative">
               <button className="text-white text-2xl" onClick={toggleSidebar}>
                 <FaBars />
               </button>
@@ -112,11 +118,10 @@ export default function ClientRootLayout({
                 <button className="text-white text-2xl" onClick={closeSidebar}>&times;</button>
               </div>
               <ul className="space-y-4">
-                {[
-                  { name: "Home", path: "/" },
-                  { name: "About", path: "/about" },
-                  { name: "Privacy Policy", path: "/Privacy" },
-                  { name: "User Guide", path: "/userGuide" },
+                {[ { name: "Home", path: "/" },
+                   { name: "About", path: "/about" },
+                   { name: "Privacy Policy", path: "/Privacy" },
+                   { name: "User Guide", path: "/userGuide" },
                 ].map((item) => (
                   <li key={item.name}>
                     <button 

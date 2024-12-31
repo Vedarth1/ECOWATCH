@@ -32,6 +32,7 @@ const LoginPage = () => {
       if (response?.token) {
         try {
           localStorage.setItem("token", response.token);
+          console.log(response.token + "TOKEN");
           router.push("/dashboard");
         } catch (storageError) {
           console.error("Error storing token:", storageError);

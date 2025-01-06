@@ -3,13 +3,14 @@
 import localFont from "next/font/local";
 import "./globals.css";
 import BottomNav from "../components/ui/bottomNav";
-import { FaBars, FaUserPlus, FaCamera } from "react-icons/fa"; 
-import { useRouter } from "next/navigation"; 
-import { useState } from "react";
-import dynamic from 'next/dynamic';
-import { WebSocketProvider } from '../context/WebSocketContext'; 
+import { FaBars, FaUserPlus, FaCamera } from "react-icons/fa";
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
+import { WebSocketProvider } from "../context/WebSocketContext";
 
-const CameraComponent = dynamic(() => import('../components/utils/cameraUtility'), { ssr: false });
+const CameraComponent = dynamic(() => import("../components/utils/cameraUtility"), { ssr: false });
+const RegionForm = dynamic(() => import("../components/utils/regionFormUtility"), { ssr: false });
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -25,12 +26,20 @@ const geistMono = localFont({
 export default function ClientRootLayout({
   children,
 }: {
-  children: React.ReactNode; 
+  children: React.ReactNode;
 }) {
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); 
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showRegionForm, setShowRegionForm] = useState(true);
+
+  // Check login status on component mount
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
+  }, []);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -48,6 +57,30 @@ export default function ClientRootLayout({
     setIsCameraOpen(false);
   };
 
+  const handleFormSubmit = async (formData: { regionName: string; city: string; state: string }) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://localhost:8000/api/region", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Region details submitted successfully:", result);
+        setShowRegionForm(false); // Hide the form after successful submission
+      } else {
+        console.error("Failed to submit region details");
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    }
+  };
+
   const handleImageCapture = async (imageSrc: string | URL | Request) => {
     setIsLoading(true);
     const base64Response = await fetch(imageSrc);
@@ -56,33 +89,32 @@ export default function ClientRootLayout({
     closeCamera();
     await sendImageToServer(blob);
     setIsLoading(false);
-    router.push('/camera'); 
+    router.push("/camera");
   };
 
   const sendImageToServer = async (blob: Blob) => {
     const formData = new FormData();
-    formData.append('file', blob, 'image.jpg');
+    formData.append("file", blob, "image.jpg");
 
-    // Get the token from localStorage
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
 
     try {
-      const response = await fetch('http://localhost:8000/api/puc', {
-        method: 'POST',
+      const response = await fetch("http://localhost:8000/api/puc", {
+        method: "POST",
         body: formData,
         headers: {
-          Authorization: token ? `Bearer ${token}` : '', // Add Authorization header with token
+          Authorization: token ? `Bearer ${token}` : "",
         },
       });
 
       if (response.ok) {
         const result = await response.json();
-        console.log('Image processed successfully:', result);
+        console.log("Image processed successfully:", result);
       } else {
-        console.error('Failed to process image');
+        console.error("Failed to process image");
       }
     } catch (error) {
-      console.error('Error sending image:', error);
+      console.error("Error sending image:", error);
     }
   };
 
@@ -99,7 +131,13 @@ export default function ClientRootLayout({
               <button className="text-white text-2xl mx-2" onClick={openCamera}>
                 <FaCamera />
               </button>
-              <button className="text-white text-2xl mx-2" onClick={() => router.push("/register")}>
+              <button
+                className="text-white text-2xl mx-2"
+                onClick={() => {
+                  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                  isLoggedIn ? router.push("/profile") : router.push("/register");
+                }}
+              >
                 <FaUserPlus />
               </button>
             </header>
@@ -115,20 +153,23 @@ export default function ClientRootLayout({
             >
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-lg font-bold">Menu</h2>
-                <button className="text-white text-2xl" onClick={closeSidebar}>&times;</button>
+                <button className="text-white text-2xl" onClick={closeSidebar}>
+                  &times;
+                </button>
               </div>
               <ul className="space-y-4">
-                {[ { name: "Home", path: "/" },
-                   { name: "About", path: "/about" },
-                   { name: "Privacy Policy", path: "/Privacy" },
-                   { name: "User Guide", path: "/userGuide" },
+                {[
+                  { name: "Home", path: "/" },
+                  { name: "About", path: "/about" },
+                  { name: "Privacy Policy", path: "/Privacy" },
+                  { name: "User Guide", path: "/userGuide" },
                 ].map((item) => (
                   <li key={item.name}>
-                    <button 
+                    <button
                       className="text-white w-full text-left py-2 px-4 hover:bg-black-600 rounded transition-colors"
-                      onClick={() => { 
-                        router.push(item.path); 
-                        closeSidebar(); 
+                      onClick={() => {
+                        router.push(item.path);
+                        closeSidebar();
                       }}
                     >
                       {item.name}
@@ -138,8 +179,16 @@ export default function ClientRootLayout({
               </ul>
             </div>
 
-            <main className={`flex-grow p-4 overflow-auto mb-16 z-10 transition-opacity duration-300 ${isSidebarOpen ? 'opacity-30' : 'opacity-100'}`}>
-              {children}
+            <main
+              className={`flex-grow p-4 overflow-auto mb-16 z-10 transition-opacity duration-300 ${
+                isSidebarOpen ? "opacity-30" : "opacity-100"
+              }`}
+            >
+              {isLoggedIn && showRegionForm ? (
+                <RegionForm onSubmit={handleFormSubmit} />
+              ) : (
+                children
+              )}
             </main>
 
             <BottomNav />

@@ -1,11 +1,14 @@
 import React, { useState } from "react";
+import { RegionData } from "../../types/region";
+import { useRegion } from "../../context/regionContext";
 
 interface RegionFormProps {
-  onSubmit: (formData: { regionName: string; city: string; state: string }) => void;
+  onSubmit: (formData: RegionData) => void;
 }
 
 const RegionForm: React.FC<RegionFormProps> = ({ onSubmit }) => {
-  const [formData, setFormData] = useState({
+  const { setRegionData } = useRegion();
+  const [formData, setFormData] = useState<RegionData>({
     regionName: "",
     city: "",
     state: "",
@@ -19,9 +22,15 @@ const RegionForm: React.FC<RegionFormProps> = ({ onSubmit }) => {
     }));
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    onSubmit(formData); // Send data to the parent component or backend
+    try {
+      await onSubmit(formData);
+      setRegionData(formData);
+      localStorage.setItem('regionData', JSON.stringify(formData));
+    } catch (error) {
+      console.error('Error submitting region form:', error);
+    }
   };
 
   return (

@@ -1,66 +1,84 @@
+// pages/dashboard.tsx
 'use client'
-import React, { useState, useEffect, useCallback } from "react";
+
+import React, { useEffect } from "react";
 import CounterCard from "./components/counterCard";
+import { useRegion } from "../../context/regionContext";
+import { useRegionStats } from "../../hooks/useRegionStats";
 import { useWebSocketContext } from "../../context/WebSocketContext";
+import { RegionStats } from "../../types/regionStats";
 
 const Dashboard = () => {
-  const [counts, setCounts] = useState({
-    valid: 0,
-    invalid: 0,
-    total: 0,
-    unmatched: 0
-  });
+    const { regionData } = useRegion();
+    const { validationResponse } = useWebSocketContext();
+    const { 
+        regionStats, 
+        loading, 
+        error, 
+        refetch 
+    } = useRegionStats(regionData?.regionName);
 
-  const { validationResponse } = useWebSocketContext();
-
-  const updateCounts = useCallback((result: { vehicle_pucc_details: { pucc_upto: string | number | Date; }; }) => {
-    setCounts(prevCounts => {
-      const newCounts = { ...prevCounts };
-      newCounts.total += 1;
-
-      if (result.vehicle_pucc_details && result.vehicle_pucc_details.pucc_upto) {
-        const puccValidUntil = new Date(result.vehicle_pucc_details.pucc_upto);
-        const currentDate = new Date();
-        
-        if (puccValidUntil > currentDate) {
-          newCounts.valid += 1;
-        } else {
-          newCounts.invalid += 1;
+    useEffect(() => {
+        if (validationResponse) {
+            refetch();
         }
-      } else {
-        newCounts.unmatched += 1;
-      }
+    }, [validationResponse, refetch]);
 
-      return newCounts;
-    });
-  }, []);
-
-  useEffect(() => {
-    if (validationResponse && validationResponse.response) {
-      validationResponse.response.forEach(updateCounts);
+    if (loading) {
+        return (
+            <div className="bg-black min-h-screen p-4 flex items-center justify-center">
+                <div className="text-white">Loading...</div>
+            </div>
+        );
     }
-  }, [validationResponse, updateCounts]);
 
-  // Function to divide counts by 2 and round down to ensure integer values
-  const getAdjustedCount = (count: number) => Math.floor(count / 2);
+    if (error) {
+        return (
+            <div className="bg-black min-h-screen p-4 flex items-center justify-center">
+                <div className="text-red-500">{error}</div>
+            </div>
+        );
+    }
 
-  return (
-    <div className="bg-black min-h-screen p-4">
-      <div className="text-center">
-        <h1 className="text-xl font-bold text-white mb-6">Dashboard</h1>
-      </div>
+    if (!regionData?.regionName || !regionStats) {
+        return (
+            <div className="bg-black min-h-screen p-4 flex items-center justify-center">
+                <div className="text-white">Please select a region first</div>
+            </div>
+        );
+    }
 
-      <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
-        <CounterCard count={getAdjustedCount(counts.valid)} name="Valid" />
-        <CounterCard count={getAdjustedCount(counts.invalid)} name="Invalid" />
-        <CounterCard count={getAdjustedCount(counts.total)} name="Total" />
-        <CounterCard count={getAdjustedCount(counts.unmatched)} name="Unmatched" />
-      </div>
+    return (
+        <div className="bg-black min-h-screen p-4">
+            <div className="text-center">
+                <h1 className="text-xl font-bold text-white mb-2">
+                    {regionStats.region_name} Dashboard
+                </h1>
+                <p className="text-gray-400 text-sm mb-6">
+                    {regionStats.city}, {regionStats.state}
+                </p>
+            </div>
 
-      <div className="mt-8">
-      </div>
-    </div>
-  );
+            <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
+                <CounterCard 
+                    count={regionStats.valid_count} 
+                    name="Valid" 
+                />
+                <CounterCard 
+                    count={regionStats.invalid_count} 
+                    name="Invalid" 
+                />
+                <CounterCard 
+                    count={regionStats.total_count} 
+                    name="Total" 
+                />
+                <CounterCard 
+                    count={regionStats.unmatched_count || 0} 
+                    name="Unmatched" 
+                />
+            </div>
+        </div>
+    );
 };
 
 export default Dashboard;

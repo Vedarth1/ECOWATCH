@@ -14,10 +14,16 @@ const LoginPage = () => {
   const [userType, setUserType] = useState("user");
 
   useEffect(() => {
-    // Check for existing token in a try-catch block to handle storage access issues
     try {
-      if (localStorage.getItem("token")) {
-        router.push("/dashboard");
+      const token = localStorage.getItem("token");
+      const regionData = localStorage.getItem("regionData");
+      
+      if (token) {
+        if (regionData) {
+          router.push("/dashboard");
+        } else {
+          router.push("/");
+        }
       }
     } catch (error) {
       console.error("Error accessing localStorage:", error);
@@ -32,8 +38,11 @@ const LoginPage = () => {
       if (response?.token) {
         try {
           localStorage.setItem("token", response.token);
+          localStorage.setItem("needsRegionForm", "true");
           console.log(response.token + "TOKEN");
-          router.push("/dashboard");
+          
+          // Force refresh and redirect
+          window.location.href = "/";
         } catch (storageError) {
           console.error("Error storing token:", storageError);
           alert("Failed to store login credentials. Please check your browser settings.");
@@ -48,7 +57,7 @@ const LoginPage = () => {
   return (
     <div className="max-w-md mx-auto mt-10 px-4">
       <h1 className="text-2xl font-bold mb-4">Login</h1>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div className="mb-4">
           <label className="block text-sm font-medium mb-1">Email</label>
           <input
@@ -90,7 +99,6 @@ const LoginPage = () => {
         {error && <p className="text-red-500 mt-2">{error}</p>}
       </form>
 
-      {/* Added sign up link */}
       <div className="mt-4 text-center">
         <p className="text-sm">
           Don't have an account?{" "}

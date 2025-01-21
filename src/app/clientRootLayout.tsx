@@ -11,6 +11,7 @@ import { WebSocketProvider } from "../context/WebSocketContext";
 import { RegionProvider, useRegion } from "../context/regionContext";
 import { useAuth } from "@/hooks/useAuth";
 import axios from "axios";
+import DeviceSetup from "../components/ui/deviceSetup"; // Import the new component
 
 const CameraComponent = dynamic(() => import("../components/utils/cameraUtility"), { ssr: false });
 const RegionForm = dynamic(() => import("../components/utils/regionFormUtility"), { ssr: false });
@@ -43,6 +44,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [showRegionForm, setShowRegionForm] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showDeviceSetup, setShowDeviceSetup] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -52,19 +54,23 @@ function MainLayout({ children }: { children: React.ReactNode }) {
 
       if (!storedRegion) {
         setShowRegionForm(true);
+        setShowDeviceSetup(false);
       } else {
         try {
           const parsedRegion = JSON.parse(storedRegion);
           setRegionData(parsedRegion);
           setShowRegionForm(false);
+          setShowDeviceSetup(true);
         } catch (error) {
           console.error("Error parsing stored region data:", error);
           setShowRegionForm(true);
+          setShowDeviceSetup(false);
         }
       }
     } else {
       setIsLoggedIn(false);
       setShowRegionForm(false);
+      setShowDeviceSetup(false);
     }
   }, [setRegionData]);
 
@@ -83,7 +89,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
         setRegionData(formData);
         localStorage.setItem("regionData", JSON.stringify(formData));
         setShowRegionForm(false);
-        router.push("/dashboard");
+        setShowDeviceSetup(true); // Show device setup after region form
       }
     } catch (error) {
       console.error("Error submitting region:", error);
@@ -93,10 +99,16 @@ function MainLayout({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const handleDeviceSetupComplete = () => {
+    setShowDeviceSetup(false);
+    router.push("/dashboard");
+  };
+
   const handleLogout = () => {
     logout();
     localStorage.removeItem("regionData");
     setShowRegionForm(false);
+    setShowDeviceSetup(false);
     setIsLoggedIn(false);
     router.push("/login");
   };
@@ -257,6 +269,8 @@ function MainLayout({ children }: { children: React.ReactNode }) {
             </h2>
             <RegionForm onSubmit={handleRegionSubmit} />
           </div>
+        ) : isLoggedIn && showDeviceSetup ? (
+          <DeviceSetup onComplete={handleDeviceSetupComplete} />
         ) : (
           children
         )}

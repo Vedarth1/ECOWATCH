@@ -1,29 +1,21 @@
-// components/Button.tsx
-import React, { FC } from 'react';
+import React from 'react';
 
-interface ButtonProps {
-  text: string;
-  onClick?: () => void;
-}
-
-const Button: FC<ButtonProps> = ({ text, onClick }) => {
+export const Button = ({
+  children,
+  onClick,
+  disabled,
+  className,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
+  className?: string;
+}) => {
+  const baseClasses =
+    'px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed';
   return (
-    <button
-      onClick={onClick}
-      style={{
-        width: '100%',
-        padding: '12px',
-        backgroundColor: '#333',
-        color: '#ccc',
-        border: 'none',
-        borderRadius: '5px',
-        cursor: 'pointer',
-        marginTop: '10px',
-      }}
-    >
-      {text}
+    <button onClick={onClick} disabled={disabled} className={`${baseClasses} ${className}`}>
+      {children}
     </button>
   );
 };
-
-export default Button;

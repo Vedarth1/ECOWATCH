@@ -1,10 +1,10 @@
 
 import Dashboard from "./dashboard/page";
 
+
 export default function Home() {
   return (
      //<LoginPage />
-     //<Register/>
-    <Dashboard></Dashboard>
+     <Dashboard/>
   );
 }

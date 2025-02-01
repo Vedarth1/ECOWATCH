@@ -5,7 +5,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import Progress from '../ui/progress';
 
 const API_BASE_URL = 'http://localhost:8000/api';
-const AWS_API_URL = 'https://f3nf46xnyl.execute-api.ap-south-1.amazonaws.com/test';
+const AWS_API_URL = 'https://ng8br1qz4f.execute-api.ap-south-1.amazonaws.com/prod';
+const API_2_URL = 'https://8w0p1ti7p4.execute-api.ap-south-1.amazonaws.com/prod';
 
 const DeviceSetup = ({ onComplete }) => {
   const [ssid, setSsid] = useState('');
@@ -29,7 +30,6 @@ const DeviceSetup = ({ onComplete }) => {
         const response = await axios.get(`${API_BASE_URL}/ports`);
         if (response.data.success) {
           setAvailablePorts(response.data.ports);
-          // Set the first port as default if available and no port is selected
           if (response.data.ports.length > 0 && !selectedPort) {
             setSelectedPort(response.data.ports[0].path);
           }
@@ -42,7 +42,7 @@ const DeviceSetup = ({ onComplete }) => {
     };
 
     fetchPorts();
-    const interval = setInterval(fetchPorts, 5000); // Poll every 5 seconds
+    const interval = setInterval(fetchPorts, 5000);
     return () => clearInterval(interval);
   }, [selectedPort]);
 
@@ -53,84 +53,165 @@ const DeviceSetup = ({ onComplete }) => {
     }
   };
 
+  const handleError = (error) => {
+    console.error('Device setup error:', error);
+    setFlashStatus({
+      status: 'error',
+      message: 'Setup failed',
+      progress: 0
+    });
+
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        const serverMessage = error.response.data?.message || error.response.data?.error;
+        setError(serverMessage || `Server error: ${error.response.status}`);
+      } else if (error.request) {
+        setError('No response from server. Please check your internet connection.');
+      } else {
+        setError('Failed to send request. Please try again.');
+      }
+    } else {
+      setError(error.message || 'An unexpected error occurred');
+    }
+  };
+
   const handleDeviceRegistration = async () => {
     try {
-      if (!selectedPort) {
-        setError('Please select a device port');
+      if (!ssid || !password) {
+        setError('WiFi credentials are required');
         return;
       }
-
+  
       setIsLoading(true);
       setError(null);
+      
+      const userId = `user-${Date.now()}`;
+      const customDeviceId = `device-${Date.now()}`;
+  
       setFlashStatus({
         status: 'preparing',
-        message: 'Registering device...',
-        progress: 20,
+        message: 'Sending request to configure device...',
+        progress: 30
       });
-
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        `${AWS_API_URL}/devices`,
-        { ssid, password },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
+  
+      // Initial request to start processing
+      try {
+        await axios.post(
+          `${AWS_API_URL}/stepfunction`,
+          {
+            userId,
+            deviceId: customDeviceId,
+            ssid,
+            password
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+            }
           }
+        );
+      } catch (error) {
+        if (error.response?.status === 504) {
+          console.log('Gateway timeout received, continuing with status check...');
+        } else {
+          throw error;
         }
-      );
-
-      const { deviceId: newDeviceId, firmwareUrl } = response.data;
-      setDeviceId(newDeviceId);
-
+      }
+  
       setFlashStatus({
-        status: 'flashing',
-        message: 'Flashing device firmware...',
-        progress: 60,
+        status: 'processing',
+        message: 'Compiling firmware...',
+        progress: 50
       });
+  
+      console.log('Waiting before checking status...');
+      await new Promise(resolve => setTimeout(resolve, 60000));
+  
+      // Check status - Fixed to handle API Gateway response format
+      try {
+        const statusResponse = await axios.post(
+          `${API_2_URL}/status`,
+          {
+            userId,
+            deviceId: customDeviceId
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+            },
+            timeout: 29000
+          }
+        );
 
-      const flashResponse = await axios.post(`${API_BASE_URL}/flash`, {
-        firmwareUrl,
-        portPath: selectedPort,
-      });
+        // Parse the nested response structure from API Gateway
+        const responseBody = typeof statusResponse.data.body === 'string' 
+          ? JSON.parse(statusResponse.data.body) 
+          : statusResponse.data.body;
 
-      if (flashResponse.data.success) {
-        setFlashStatus({
-          status: 'complete',
-          message: 'Device successfully configured!',
-          progress: 100,
-        });
-        onComplete?.();
-      } else {
-        throw new Error('Flashing failed');
+        console.log('Status response:', responseBody);
+
+        if (responseBody?.status === 'PROCESSING') {
+          setDeviceId(responseBody.deviceId);
+          
+          setFlashStatus({
+            status: 'flashing',
+            message: 'Processing firmware compilation...',
+            progress: 70
+          });
+
+          // You might want to implement a polling mechanism here
+          // to check the status periodically until it's COMPLETED
+
+        } else if (responseBody?.status === 'COMPLETED' && responseBody?.firmwareUrl) {
+          setDeviceId(responseBody.deviceId);
+          
+          setFlashStatus({
+            status: 'flashing',
+            message: 'Flashing device firmware...',
+            progress: 70
+          });
+    
+          // Flash the device - Fixed to match backend requirements
+          console.log('Sending flash request with:', {
+            firmwareUrl: responseBody.firmwareUrl,
+            portPath: selectedPort
+          });
+
+          const flashResponse = await axios.post(`${API_BASE_URL}/flash`, {
+            firmwareUrl: responseBody.firmwareUrl,
+            portPath: selectedPort  // Changed from deviceId to portPath
+          });
+    
+          if (flashResponse.data.success) {
+            setFlashStatus({
+              status: 'complete',
+              message: 'Device setup complete!',
+              progress: 100
+            });
+    
+            onComplete?.({
+              userId,
+              deviceId: responseBody.deviceId,
+              ssid
+            });
+          } else {
+            throw new Error('Firmware flashing failed');
+          }
+        } else {
+          throw new Error('Invalid status response');
+        }
+      } catch (error) {
+        console.error('Status check error:', error);
+        throw error;
       }
     } catch (error) {
-      console.error('Setup failed:', error);
+      console.error('Setup error:', error);
       handleError(error);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleError = (error) => {
-    if (axios.isAxiosError(error)) {
-      if (error.response?.status === 401) {
-        setError('Authentication failed. Please login again.');
-        localStorage.removeItem('token');
-        delete axios.defaults.headers.common['Authorization'];
-      } else if (error.response) {
-        setError(error.response.data.error || 'Device setup failed');
-      } else if (error.request) {
-        setError('Network error. Please check your connection.');
-      }
-    } else {
-      setError('Device setup failed. Please try again.');
-    }
-
-    setFlashStatus({
-      status: 'error',
-      message: 'Failed to configure device',
-      progress: 0,
-    });
   };
 
   return (
@@ -252,13 +333,13 @@ const DeviceSetup = ({ onComplete }) => {
 
         {flashStatus.status === 'error' && (
           <div className="mt-4">
-            <p className="text-sm text-gray-400">Common solutions:</p>
+            <p className="text-sm text-gray-400">Troubleshooting tips:</p>
             <ul className="list-disc list-inside text-sm text-gray-400 mt-2">
-              <li>Make sure the device is properly connected via USB</li>
-              <li>Try a different USB port</li>
-              <li>Verify the selected port matches your device</li>
-              <li>Check if the ESP device is in flash mode</li>
-              <li>Check your internet connection</li>
+              <li>Verify USB device connection</li>
+              <li>Try alternate USB port</li>
+              <li>Confirm selected port matches device</li>
+              <li>Ensure ESP device is in flash mode</li>
+              <li>Check internet connectivity</li>
             </ul>
           </div>
         )}

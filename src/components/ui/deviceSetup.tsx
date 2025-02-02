@@ -5,7 +5,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import Progress from '../ui/progress';
 
 const API_BASE_URL = 'http://localhost:8000/api';
-const AWS_API_URL = 'https://ng8br1qz4f.execute-api.ap-south-1.amazonaws.com/prod';
+const AWS_API_URL = 'https://ng8br1qz4f.execute-api.ap-south-1.amazonaws.com/test';
 const API_2_URL = 'https://8w0p1ti7p4.execute-api.ap-south-1.amazonaws.com/prod';
 
 const DeviceSetup = ({ onComplete }) => {
@@ -42,7 +42,7 @@ const DeviceSetup = ({ onComplete }) => {
     };
 
     fetchPorts();
-    const interval = setInterval(fetchPorts, 5000);
+    const interval = setInterval(fetchPorts, 120000);
     return () => clearInterval(interval);
   }, [selectedPort]);
 
@@ -126,7 +126,7 @@ const DeviceSetup = ({ onComplete }) => {
       });
   
       console.log('Waiting before checking status...');
-      await new Promise(resolve => setTimeout(resolve, 60000));
+      await new Promise(resolve => setTimeout(resolve, 90000));
   
       // Check status - Fixed to handle API Gateway response format
       try {

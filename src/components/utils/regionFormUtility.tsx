@@ -34,58 +34,75 @@ const RegionForm: React.FC<RegionFormProps> = ({ onSubmit }) => {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-4 text-center">Enter Region Details</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Region Name
-          </label>
-          <input
-            type="text"
-            name="regionName"
-            placeholder="Enter region name"
-            required
-            value={formData.regionName}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            City
-          </label>
-          <input
-            type="text"
-            name="city"
-            placeholder="Enter city"
-            required
-            value={formData.city}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            State
-          </label>
-          <input
-            type="text"
-            name="state"
-            placeholder="Enter state"
-            required
-            value={formData.state}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
-        >
-          Submit
-        </button>
-      </form>
+    <div className="max-w-md mx-auto mt-8">
+      <div className="bg-gray-900 p-8 rounded-xl shadow-xl border border-gray-800">
+        <h2 className="text-2xl font-bold mb-6 text-white text-center bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+          Region Details
+        </h2>
+        
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Region Name
+            </label>
+            <input
+              type="text"
+              name="regionName"
+              placeholder="Enter region name"
+              required
+              value={formData.regionName}
+              onChange={handleChange}
+              className="w-full px-4 py-3 bg-gray-800 text-white border border-gray-700 rounded-lg 
+                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                       placeholder-gray-500 transition-all duration-200"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              City
+            </label>
+            <input
+              type="text"
+              name="city"
+              placeholder="Enter city"
+              required
+              value={formData.city}
+              onChange={handleChange}
+              className="w-full px-4 py-3 bg-gray-800 text-white border border-gray-700 rounded-lg 
+                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                       placeholder-gray-500 transition-all duration-200"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              State
+            </label>
+            <input
+              type="text"
+              name="state"
+              placeholder="Enter state"
+              required
+              value={formData.state}
+              onChange={handleChange}
+              className="w-full px-4 py-3 bg-gray-800 text-white border border-gray-700 rounded-lg 
+                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                       placeholder-gray-500 transition-all duration-200"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full mt-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-6 rounded-lg
+                     hover:from-blue-700 hover:to-blue-800 transform hover:scale-[1.02] transition-all duration-200
+                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900
+                     shadow-lg shadow-blue-500/20 font-medium"
+          >
+            Save Region Details
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

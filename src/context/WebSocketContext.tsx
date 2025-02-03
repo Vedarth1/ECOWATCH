@@ -1,32 +1,37 @@
+// context/WebSocketContext.tsx
+
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode, FC } from "react";
 import io, { Socket } from "socket.io-client";
 import { PUCValidationResponse, PUCValidationResult } from "../types/pucValidationResponse";
-
+import { PollutionData } from "../types/pollution";
 
 interface WebSocketContextType {
   validationResponse: PUCValidationResponse | null;
   error: string | null;
   emitEvent: (eventName: string, data: unknown) => void;
+  pollutionData: PollutionData | null;
+  isConnected: boolean;
 }
 
-
 const WebSocketContext = createContext<WebSocketContextType | undefined>(undefined);
-
 
 export const WebSocketProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [validationResponse, setValidationResponse] = useState<PUCValidationResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pollutionData, setPollutionData] = useState<PollutionData | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
     console.log("Initializing WebSocket connection");
-    const newSocket = io("http://localhost:8000"); // Update URL as needed
+    const newSocket = io("http://localhost:8000");
     setSocket(newSocket);
 
     newSocket.on("connect", () => {
       console.log("WebSocket connected");
+      setIsConnected(true);
     });
 
     newSocket.on('puc_validation_result', (data: { data: PUCValidationResult[] }) => {
@@ -44,8 +49,19 @@ export const WebSocketProvider: FC<{ children: ReactNode }> = ({ children }) => 
       setError(data.error);
     });
 
+    newSocket.on("pollution_data_update", (data: PollutionData) => {
+      console.log("Received pollution data:", data);
+      setPollutionData(data);
+    });
+
+    newSocket.on("pollution_data_error", (data: { error: string }) => {
+      console.log("Received pollution data error:", data);
+      setError(data.error);
+    });
+
     newSocket.on("disconnect", (reason) => {
       console.log("WebSocket disconnected:", reason);
+      setIsConnected(false);
     });
 
     return () => {
@@ -66,14 +82,21 @@ export const WebSocketProvider: FC<{ children: ReactNode }> = ({ children }) => 
     [socket]
   );
 
+  const contextValue: WebSocketContextType = {
+    validationResponse,
+    error,
+    emitEvent,
+    pollutionData,
+    isConnected
+  };
+
   return (
-    <WebSocketContext.Provider value={{ validationResponse, error, emitEvent }}>
+    <WebSocketContext.Provider value={contextValue}>
       {children}
     </WebSocketContext.Provider>
   );
 };
 
-// Custom hook to use the WebSocket context
 export const useWebSocketContext = () => {
   const context = useContext(WebSocketContext);
   if (!context) {

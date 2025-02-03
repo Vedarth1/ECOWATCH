@@ -42,7 +42,7 @@ const DeviceSetup = ({ onComplete }) => {
     };
 
     fetchPorts();
-    const interval = setInterval(fetchPorts, 120000);
+    const interval = setInterval(fetchPorts, 800000);
     return () => clearInterval(interval);
   }, [selectedPort]);
 

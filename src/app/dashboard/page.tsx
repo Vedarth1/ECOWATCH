@@ -7,6 +7,7 @@ import { useRegion } from "../../context/regionContext";
 import { useRegionStats } from "../../hooks/useRegionStats";
 import { useWebSocketContext } from "../../context/WebSocketContext";
 import { RegionStats } from "../../types/regionStats";
+import PollutionMonitorCard from "@/components/ui/pollutionCard";
 
 const Dashboard = () => {
     const { regionData } = useRegion();
@@ -77,7 +78,11 @@ const Dashboard = () => {
                     name="Unmatched" 
                 />
             </div>
+            <div className="flex justify-center items-center w-full">
+            <PollutionMonitorCard/>
+            </div>
         </div>
+        
     );
 };
 

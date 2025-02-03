@@ -75,6 +75,15 @@ const DeviceSetup = ({ onComplete }) => {
     }
   };
 
+  const handleSkip = () => {
+    const skipDeviceId = `skipped-${Date.now()}`;
+    onComplete?.({
+      userId: `user-${Date.now()}`,
+      deviceId: skipDeviceId,
+      ssid: 'skipped'
+    });
+  };
+
   const handleDeviceRegistration = async () => {
     try {
       if (!ssid || !password) {
@@ -161,9 +170,6 @@ const DeviceSetup = ({ onComplete }) => {
             progress: 70
           });
 
-          // You might want to implement a polling mechanism here
-          // to check the status periodically until it's COMPLETED
-
         } else if (responseBody?.status === 'COMPLETED' && responseBody?.firmwareUrl) {
           setDeviceId(responseBody.deviceId);
           
@@ -181,7 +187,7 @@ const DeviceSetup = ({ onComplete }) => {
 
           const flashResponse = await axios.post(`${API_BASE_URL}/flash`, {
             firmwareUrl: responseBody.firmwareUrl,
-            portPath: selectedPort  // Changed from deviceId to portPath
+            portPath: selectedPort
           });
     
           if (flashResponse.data.success) {
@@ -279,17 +285,27 @@ const DeviceSetup = ({ onComplete }) => {
           </Alert>
         )}
 
-        <button
-          onClick={handleDeviceRegistration}
-          disabled={isLoading || authLoading || !ssid || !password || !selectedPort}
-          className={`w-full py-2 px-4 rounded text-white transition-colors ${
-            isLoading || authLoading || !ssid || !password || !selectedPort
-              ? 'bg-blue-500/50 cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-700'
-          }`}
-        >
-          {isLoading ? 'Configuring Device...' : 'Configure Device'}
-        </button>
+        <div className="flex gap-4">
+          <button
+            onClick={handleDeviceRegistration}
+            disabled={isLoading || authLoading || !ssid || !password || !selectedPort}
+            className={`flex-1 py-2 px-4 rounded text-white transition-colors ${
+              isLoading || authLoading || !ssid || !password || !selectedPort
+                ? 'bg-blue-500/50 cursor-not-allowed'
+                : 'bg-blue-600 hover:bg-blue-700'
+            }`}
+          >
+            {isLoading ? 'Configuring Device...' : 'Configure Device'}
+          </button>
+
+          <button
+            onClick={handleSkip}
+            disabled={isLoading}
+            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors"
+          >
+            Skip Setup
+          </button>
+        </div>
 
         {flashStatus.status !== 'idle' && (
           <div className="mt-4 p-4 bg-gray-800 rounded-md">

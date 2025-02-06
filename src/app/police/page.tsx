@@ -1,8 +1,9 @@
 import React from 'react'
+import Reports from '../policyMaker/components/reports'
 
 const police = () => {
   return (
-    <div>police</div>
+    <Reports/>
   )
 }
 

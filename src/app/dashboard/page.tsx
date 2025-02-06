@@ -6,8 +6,7 @@ import CounterCard from "./components/counterCard";
 import { useRegion } from "../../context/regionContext";
 import { useRegionStats } from "../../hooks/useRegionStats";
 import { useWebSocketContext } from "../../context/WebSocketContext";
-import { RegionStats } from "../../types/regionStats";
-import PollutionMonitorCard from "@/components/ui/pollutionCard";
+import Reports from "./components/reports";
 
 const Dashboard = () => {
     const { regionData } = useRegion();
@@ -79,8 +78,11 @@ const Dashboard = () => {
                 />
             </div>
             <div className="flex justify-center items-center w-full">
-            <PollutionMonitorCard/>
+            
             </div>
+            <br />
+            <br />
+            <Reports/>
         </div>
         
     );

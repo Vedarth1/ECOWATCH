@@ -141,7 +141,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
 
       closeCamera();
       await sendImageToServer(blob);
-      router.push("/camera");
+      router.push("/police");
     } catch (error) {
       console.error("Error processing image:", error);
       alert("Failed to process image. Please try again.");

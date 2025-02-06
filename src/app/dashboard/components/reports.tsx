@@ -5,21 +5,22 @@ import { useWebSocketContext } from "../../../context/WebSocketContext";
 
 const Reports = () => {
   const { validationResponse, error } = useWebSocketContext();
-  const [displayData, setDisplayData] = useState(null);
-  const CLEAR_TIMEOUT = 2 * 60 * 1000; // 2 minutes in milliseconds
+  const [storedData, setStoredData] = useState(null);
+  const STORAGE_KEY = 'vehicle_reports';
 
+  // Load data from localStorage on component mount
+  useEffect(() => {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+      setStoredData(JSON.parse(savedData));
+    }
+  }, []);
+
+  // Handle new WebSocket data
   useEffect(() => {
     if (validationResponse) {
-      // Set the new data
-      setDisplayData(validationResponse);
-
-      // Set a timer to clear the data after 2 minutes
-      const timer = setTimeout(() => {
-        setDisplayData(null);
-      }, CLEAR_TIMEOUT);
-
-      // Cleanup timer on component unmount or when new data arrives
-      return () => clearTimeout(timer);
+      setStoredData(validationResponse);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(validationResponse));
     }
   }, [validationResponse]);
 
@@ -40,11 +41,11 @@ const Reports = () => {
     }));
   };
 
-  const formattedData = formatData(displayData);
+  const formattedData = formatData(storedData);
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
-      <h1 className="text-xl text-center font-bold mb-4">Detected Vehicles</h1>
+      <h1 className="text-xl text-center font-bold mb-4 text-white">Detected Vehicles</h1>
       
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -57,19 +58,19 @@ const Reports = () => {
         <table className="w-full">
           <thead>
             <tr className="bg-gray-950">
-              <th className="p-3 text-left font-semibold border-b">Owner Name</th>
-              <th className="p-3 text-left font-semibold border-b">Model</th>
-              <th className="p-3 text-left font-semibold border-b">Reg No</th>
-              <th className="p-3 text-left font-semibold border-b">PUC Status</th>
+              <th className="p-3 text-left font-semibold border-b text-white">Owner Name</th>
+              <th className="p-3 text-left font-semibold border-b text-white">Model</th>
+              <th className="p-3 text-left font-semibold border-b text-white">Reg No</th>
+              <th className="p-3 text-left font-semibold border-b text-white">PUC Status</th>
             </tr>
           </thead>
           <tbody>
             {formattedData.length > 0 ? (
               formattedData.map((item, index) => (
-                <tr key={index} className="border-b hover:bg-gray-50">
-                  <td className="p-3 whitespace-normal break-words max-w-[200px]">{item.ownerName}</td>
-                  <td className="p-3 whitespace-normal break-words max-w-[150px]">{item.model}</td>
-                  <td className="p-3 whitespace-normal break-words max-w-[150px]">{item.regNo}</td>
+                <tr key={index} className="border-b border-gray-800 hover:bg-gray-900">
+                  <td className="p-3 whitespace-normal break-words max-w-[200px] text-white">{item.ownerName}</td>
+                  <td className="p-3 whitespace-normal break-words max-w-[150px] text-white">{item.model}</td>
+                  <td className="p-3 whitespace-normal break-words max-w-[150px] text-white">{item.regNo}</td>
                   <td className="p-3">
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-semibold ${
@@ -85,7 +86,7 @@ const Reports = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="4" className="p-3 text-center text-gray-500">
+                <td colSpan="4" className="p-3 text-center text-gray-400">
                   No vehicles detected yet
                 </td>
               </tr>

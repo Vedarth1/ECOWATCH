@@ -3,7 +3,6 @@
 import React from 'react';
 import { useWebSocketContext } from '../../context/WebSocketContext';
 import { AlertCircle, Wifi, WifiOff } from 'lucide-react';
-import { PollutionData } from '../../types/pollution';
 
 const PollutionMonitorCard: React.FC = () => {
   const { pollutionData, isConnected } = useWebSocketContext();

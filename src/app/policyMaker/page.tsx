@@ -1,8 +1,20 @@
+"use client";
+
 import React from 'react';
-import Reports from './components/reports';
 import Counts from './components/counts';
+import PollutionMonitorCard from '@/components/ui/pollutionCard';
+import { useWebSocketContext } from '@/context/WebSocketContext';
+import AirQualityChart from './components/airQuality';
 
 const PolicyMaker = () => {
+  // Try to use the context here to debug
+  try {
+    const context = useWebSocketContext();
+    console.log("WebSocket Context in PolicyMaker:", context);
+  } catch (error) {
+    console.error("WebSocket Context Error:", error);
+  }
+
   const metrics = [
     {
       count: 12,
@@ -33,32 +45,25 @@ const PolicyMaker = () => {
             />
           ))}
         </div>
-        <Reports />
-        <div className="flex justify-center">
-          <button 
-            className="bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-900 transition-colors duration-200 border border-gray-800 flex items-center space-x-2"
-          >
-            <span>Detail Reports</span>
-            <svg 
-              className="w-4 h-4 text-cyan-400" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M9 5l7 7-7 7" 
-              />
-            </svg>
-          </button>
-        </div>
         <br />
         <br />
+        <ErrorBoundary>
+          <PollutionMonitorCard/>
+          <AirQualityChart/>
+        </ErrorBoundary>
       </div>
     </div>
   );
+};
+
+// Simple Error Boundary Component
+const ErrorBoundary = ({ children }) => {
+  try {
+    return children;
+  } catch (error) {
+    console.error("Render Error:", error);
+    return <div className="text-red-500">Error loading pollution monitor</div>;
+  }
 };
 
 export default PolicyMaker;

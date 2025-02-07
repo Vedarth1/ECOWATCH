@@ -2,27 +2,62 @@
 
 import React, { useState, useEffect } from 'react';
 import { useWebSocketContext } from "../../../context/WebSocketContext";
+import { useRegion } from '../../../context/regionContext';
 
 const Reports = () => {
-  const { validationResponse, error } = useWebSocketContext();
-  const [storedData, setStoredData] = useState(null);
-  const STORAGE_KEY = 'vehicle_reports';
+  const { error: wsError } = useWebSocketContext();
+  const { regionData } = useRegion();
+  const [vehicles, setVehicles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Load data from localStorage on component mount
   useEffect(() => {
-    const savedData = localStorage.getItem(STORAGE_KEY);
-    if (savedData) {
-      setStoredData(JSON.parse(savedData));
+    if (regionData?.regionName) {
+      fetchVehicles();
+    } else {
+      setError('No region selected');
+      setLoading(false);
     }
-  }, []);
+  }, [regionData?.regionName]);
 
-  // Handle new WebSocket data
-  useEffect(() => {
-    if (validationResponse) {
-      setStoredData(validationResponse);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(validationResponse));
+  const fetchVehicles = async () => {
+    if (!regionData?.regionName) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const encodedRegionName = encodeURIComponent(regionData.regionName);
+      const response = await fetch(`http://localhost:8000/api/region/${encodedRegionName}/vehicles`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({
+          message: 'Failed to fetch vehicle data'
+        }));
+        throw new Error(errorData.message || 'Failed to fetch vehicle data');
+      }
+
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.message || 'Failed to fetch vehicle data');
+      }
+
+      setVehicles(formatData(data));
+    } catch (err) {
+      console.error('Error fetching vehicles:', err);
+      setError(err.message || 'Failed to fetch vehicle data');
+      setVehicles([]);
+    } finally {
+      setLoading(false);
     }
-  }, [validationResponse]);
+  };
 
   const formatData = (response) => {
     if (!response?.response) return [];
@@ -41,16 +76,40 @@ const Reports = () => {
     }));
   };
 
-  const formattedData = formatData(storedData);
+  if (!regionData?.regionName) {
+    return (
+      <div className="w-full max-w-4xl mx-auto p-4 text-center text-white">
+        Please select a region to view vehicle reports.
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
-      <h1 className="text-xl text-center font-bold mb-4 text-white">Detected Vehicles</h1>
+      <div className="flex justify-between items-center mb-4">
+        <div>
+          <h1 className="text-xl font-bold text-white">Detected Vehicles</h1>
+          <p className="text-gray-400 text-sm mt-1">
+            Region: {regionData.regionName} | City: {regionData.city} | State: {regionData.state}
+          </p>
+        </div>
+        <button
+          onClick={fetchVehicles}
+          disabled={loading}
+          className={`px-4 py-2 rounded-lg text-sm ${
+            loading 
+              ? 'bg-gray-700 cursor-not-allowed' 
+              : 'bg-gray-900 hover:bg-blue-700 text-white'
+          }`}
+        >
+          {loading ? 'Loading...' : 'Refresh'}
+        </button>
+      </div>
       
-      {error && (
+      {(error || wsError) && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           <p className="font-bold">Error:</p>
-          <p>{error}</p>
+          <p>{error || wsError}</p>
         </div>
       )}
 
@@ -65,8 +124,14 @@ const Reports = () => {
             </tr>
           </thead>
           <tbody>
-            {formattedData.length > 0 ? (
-              formattedData.map((item, index) => (
+            {loading ? (
+              <tr>
+                <td colSpan="4" className="p-3 text-center text-gray-400">
+                  Loading...
+                </td>
+              </tr>
+            ) : vehicles.length > 0 ? (
+              vehicles.map((item, index) => (
                 <tr key={index} className="border-b border-gray-800 hover:bg-gray-900">
                   <td className="p-3 whitespace-normal break-words max-w-[200px] text-white">{item.ownerName}</td>
                   <td className="p-3 whitespace-normal break-words max-w-[150px] text-white">{item.model}</td>

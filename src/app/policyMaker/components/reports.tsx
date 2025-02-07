@@ -2,24 +2,53 @@
 
 import React, { useState, useEffect } from 'react';
 import { useWebSocketContext } from "../../../context/WebSocketContext";
+import { Download } from "lucide-react";
 
 const Reports = () => {
   const { validationResponse, error } = useWebSocketContext();
   const [displayData, setDisplayData] = useState(null);
-  const CLEAR_TIMEOUT = 2 * 60 * 1000; // 2 minutes in milliseconds
+  const STORAGE_KEY = 'vehicle_reports_data';
+  const EXPIRY_KEY = 'vehicle_reports_expiry';
+  const EXPIRY_TIME = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+  useEffect(() => {
+    // Check for existing data in localStorage on component mount
+    const loadStoredData = () => {
+      try {
+        const storedData = localStorage.getItem(STORAGE_KEY);
+        const expiryTime = localStorage.getItem(EXPIRY_KEY);
+        
+        if (storedData && expiryTime) {
+          const now = new Date().getTime();
+          if (now < parseInt(expiryTime)) {
+            setDisplayData(JSON.parse(storedData));
+          } else {
+            // Clear expired data
+            localStorage.removeItem(STORAGE_KEY);
+            localStorage.removeItem(EXPIRY_KEY);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading stored data:', error);
+      }
+    };
+
+    loadStoredData();
+  }, []);
 
   useEffect(() => {
     if (validationResponse) {
-      // Set the new data
+      // Update state
       setDisplayData(validationResponse);
 
-      // Set a timer to clear the data after 2 minutes
-      const timer = setTimeout(() => {
-        setDisplayData(null);
-      }, CLEAR_TIMEOUT);
-
-      // Cleanup timer on component unmount or when new data arrives
-      return () => clearTimeout(timer);
+      try {
+        // Store in localStorage with expiry
+        const expiryTime = new Date().getTime() + EXPIRY_TIME;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(validationResponse));
+        localStorage.setItem(EXPIRY_KEY, expiryTime.toString());
+      } catch (error) {
+        console.error('Error storing data:', error);
+      }
     }
   }, [validationResponse]);
 
@@ -42,9 +71,87 @@ const Reports = () => {
 
   const formattedData = formatData(displayData);
 
+  const exportToCSV = () => {
+    if (formattedData.length === 0) return;
+
+    // Create CSV headers
+    const headers = [
+      'Owner Name',
+      'Model',
+      'Registration Number',
+      'PUC Status',
+      'PUC Valid From',
+      'PUC Valid Until',
+      'PUC Center Number',
+      'PUC Number'
+    ];
+
+    // Convert data to CSV format
+    const csvData = formattedData.map(item => [
+      item.ownerName,
+      item.model,
+      item.regNo,
+      item.pucStatus,
+      item.puccDetails.validFrom,
+      item.puccDetails.validUntil,
+      item.puccDetails.centerNo,
+      item.puccDetails.puccNo
+    ]);
+
+    // Add headers to the beginning
+    csvData.unshift(headers);
+
+    // Convert to CSV string
+    const csvString = csvData
+      .map(row => 
+        row.map(cell => 
+          typeof cell === 'string' ? `"${cell.replace(/"/g, '""')}"` : cell
+        ).join(',')
+      )
+      .join('\n');
+
+    // Create and trigger download
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `vehicle_reports_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  const clearStoredData = () => {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(EXPIRY_KEY);
+      setDisplayData(null);
+    } catch (error) {
+      console.error('Error clearing stored data:', error);
+    }
+  };
+
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
-      <h1 className="text-xl text-center font-bold mb-4">Detected Vehicles</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-xl font-bold">Detected Vehicles</h1>
+        <div className="flex gap-2">
+          <button
+            onClick={exportToCSV}
+            disabled={formattedData.length === 0}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
+              ${formattedData.length === 0 
+                ? 'bg-black cursor-not-allowed' 
+                : 'bg-gray-900 hover:bg-blue-700 text-white'}`}
+          >
+            <Download size={16} />
+            Export CSV
+          </button>
+        </div>
+      </div>
       
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">

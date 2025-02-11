@@ -50,12 +50,10 @@ export const WebSocketProvider: FC<{ children: ReactNode }> = ({ children }) => 
     });
 
     newSocket.on("pollution_data_update", (data: PollutionData) => {
-      console.log("Received pollution data:", data);
       setPollutionData(data);
     });
 
     newSocket.on("pollution_data_error", (data: { error: string }) => {
-      console.log("Received pollution data error:", data);
       setError(data.error);
     });
 

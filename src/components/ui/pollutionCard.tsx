@@ -10,66 +10,24 @@ const RETRY_DELAY = 5000;
 const MAX_RETRIES = 3;
 
 const logger = {
-  info: (message, data = {}) => {
-    console.log(`[PollutionMonitor][INFO][${new Date().toISOString()}] ${message}`, data);
-  },
-  warn: (message, data = {}) => {
-    console.warn(`[PollutionMonitor][WARN][${new Date().toISOString()}] ${message}`, data);
-  },
   error: (message, error, data = {}) => {
     console.error(`[PollutionMonitor][ERROR][${new Date().toISOString()}] ${message}`, { error, ...data });
   },
-  debug: (message, data = {}) => {
-    console.debug(`[PollutionMonitor][DEBUG][${new Date().toISOString()}] ${message}`, data);
+  warn: (message, data = {}) => {
+    console.warn(`[PollutionMonitor][WARN][${new Date().toISOString()}] ${message}`, data);
   }
 };
 
 const PollutionMonitorCard = () => {
-  logger.info('Component rendering');
-  
   const { pollutionData, isConnected } = useWebSocketContext();
   const { regionData } = useRegion();
   const [lastProcessedData, setLastProcessedData] = useState(null);
   const [processingError, setProcessingError] = useState(null);
   const retryTimeoutRef = useRef(null);
-  const pollutionDataRef = useRef(null);
-
-  // Log whenever pollutionData changes
-  useEffect(() => {
-    logger.info('pollutionData changed:', { 
-      newData: pollutionData,
-      previousData: pollutionDataRef.current,
-      hasRegionData: !!regionData,
-      regionName: regionData?.regionName 
-    });
-    pollutionDataRef.current = pollutionData;
-  }, [pollutionData, regionData]);
 
   const processWithRetry = useCallback(async (regionName, ppm, timestamp, retryCount = 0) => {
-    logger.info('Starting processWithRetry', {
-      regionName,
-      ppm,
-      timestamp,
-      retryCount
-    });
-
     try {
-      logger.info('Attempting to save PPM data', {
-        regionName,
-        ppm,
-        timestamp,
-        retryCount
-      });
-
       await savePpmData(regionName, ppm);
-      
-      logger.info('Successfully saved PPM data', {
-        regionName,
-        ppm,
-        timestamp,
-        retryCount
-      });
-
       setLastProcessedData({ ppm, timestamp });
       setProcessingError(null);
     } catch (error) {
@@ -81,12 +39,6 @@ const PollutionMonitorCard = () => {
       });
 
       if (retryCount < MAX_RETRIES) {
-        logger.info(`Scheduling retry ${retryCount + 1}/${MAX_RETRIES}`, {
-          delay: RETRY_DELAY,
-          ppm,
-          region: regionName
-        });
-
         retryTimeoutRef.current = setTimeout(() => {
           processWithRetry(regionName, ppm, timestamp, retryCount + 1);
         }, RETRY_DELAY);
@@ -96,26 +48,9 @@ const PollutionMonitorCard = () => {
     }
   }, []);
 
-  // WebSocket data processing
   useEffect(() => {
-    logger.info('WebSocket data processing effect triggered', {
-      hasPollutionData: !!pollutionData,
-      pollutionPpm: pollutionData?.ppm,
-      hasRegionData: !!regionData,
-      regionName: regionData?.regionName
-    });
-
-    // Changed condition to check if ppm is defined (including zero)
     if (pollutionData && typeof pollutionData.ppm === 'number' && regionData?.regionName) {
-      logger.info('Processing new WebSocket data', {
-        ppm: pollutionData.ppm,
-        deviceId: pollutionData.deviceId,
-        timestamp: pollutionData.timestamp,
-        region: regionData.regionName
-      });
-
       if (retryTimeoutRef.current) {
-        logger.info('Clearing existing retry timeout');
         clearTimeout(retryTimeoutRef.current);
       }
 
@@ -124,21 +59,22 @@ const PollutionMonitorCard = () => {
         pollutionData.ppm,
         pollutionData.timestamp
       );
-    } else {
+    } else if (pollutionData || regionData) {
       logger.warn('Missing required data for processing', {
         hasPpm: typeof pollutionData?.ppm === 'number',
         ppmValue: pollutionData?.ppm,
-        hasRegionName: !!regionData?.regionName,
-        pollutionData,
-        regionData
+        hasRegionName: !!regionData?.regionName
       });
     }
   }, [pollutionData, regionData?.regionName, processWithRetry]);
 
-  // Log connection status changes
   useEffect(() => {
-    logger.info('WebSocket connection status changed', { isConnected });
-  }, [isConnected]);
+    return () => {
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const getPpmColor = useCallback((ppm) => {
     if (!ppm) return 'text-gray-400';
@@ -164,19 +100,7 @@ const PollutionMonitorCard = () => {
     }).format(new Date(timestamp));
   }, []);
 
-  // Component cleanup
-  useEffect(() => {
-    logger.info('Component mounted');
-    return () => {
-      logger.info('Component unmounting');
-      if (retryTimeoutRef.current) {
-        clearTimeout(retryTimeoutRef.current);
-      }
-    };
-  }, []);
-
   if (!regionData) {
-    logger.warn('Component rendered without region data');
     return (
       <Card className="max-w-sm bg-black border border-gray-800">
         <CardContent className="pt-6">

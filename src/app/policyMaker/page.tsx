@@ -10,7 +10,6 @@ const PolicyMaker = () => {
   // Try to use the context here to debug
   try {
     const context = useWebSocketContext();
-    console.log("WebSocket Context in PolicyMaker:", context);
   } catch (error) {
     console.error("WebSocket Context Error:", error);
   }

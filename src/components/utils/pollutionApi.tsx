@@ -27,11 +27,6 @@ export const savePpmData = async (regionName: string, ppm_value: number): Promis
     ppm_value
   };
   
-  console.log(`[PollutionAPI][INFO][${new Date().toISOString()}] Making PPM save request`, {
-    requestId,
-    endpoint: 'http://localhost:8000/api/ppm-value',
-    ...payload
-  });
 
   try {
     const startTime = performance.now();
@@ -58,21 +53,10 @@ export const savePpmData = async (regionName: string, ppm_value: number): Promis
       });
       throw new Error(data.message || 'Failed to save PPM data');
     }
-    
-    console.log(`[PollutionAPI][INFO][${new Date().toISOString()}] Successfully saved PPM data`, {
-      requestId,
-      statusCode: response.status,
-      duration: `${duration.toFixed(2)}ms`,
-      ...payload
-    });
+  
     
     return data;
   } catch (error) {
-    console.error(`[PollutionAPI][ERROR][${new Date().toISOString()}] Failed to save PPM data`, {
-      requestId,
-      ...payload,
-      error: error.message
-    });
     throw error;
   }
 };

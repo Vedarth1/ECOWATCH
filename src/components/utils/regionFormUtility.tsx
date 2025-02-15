@@ -102,6 +102,7 @@ const RegionForm: React.FC<RegionFormProps> = ({ onSubmit }) => {
             Save Region Details
           </button>
         </form>
+        <p className="text-gray-400 text-sm mt-4 text-center">Please use 'chowk' or 'Square' as a suffix for accurate location.</p>
       </div>
     </div>
   );

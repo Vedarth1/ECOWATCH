@@ -25,6 +25,7 @@ const PollutionMonitorCard = () => {
   const [processingError, setProcessingError] = useState(null);
   const retryTimeoutRef = useRef(null);
 
+  // Rest of the hooks and callbacks remain the same...
   const processWithRetry = useCallback(async (regionName, ppm, timestamp, retryCount = 0) => {
     try {
       await savePpmData(regionName, ppm);
@@ -77,7 +78,7 @@ const PollutionMonitorCard = () => {
   }, []);
 
   const getPpmColor = useCallback((ppm) => {
-    if (!ppm) return 'text-gray-400';
+    if (!ppm) return 'text-gray-500';
     if (ppm <= 50) return 'text-green-400';
     if (ppm <= 100) return 'text-yellow-400';
     if (ppm <= 150) return 'text-orange-400';
@@ -102,30 +103,35 @@ const PollutionMonitorCard = () => {
 
   if (!regionData) {
     return (
-      <Card className="max-w-sm bg-black border border-gray-800">
-        <CardContent className="pt-6">
-          <p className="text-gray-400 text-center">Please select a region to monitor pollution data.</p>
+      <Card className="max-w-sm !bg-black border-gray-700">
+        <CardHeader className="!bg-black">
+          <CardTitle className="!text-white">Air Quality Monitor</CardTitle>
+        </CardHeader>
+        <CardContent className="!bg-black !text-white">
+          <p>Test content</p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="max-w-sm bg-black border border-gray-800">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <div>
-          <CardTitle className="text-lg text-white">Air Quality Monitor</CardTitle>
-          <p className="text-sm text-gray-400">Region: {regionData.regionName}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          {isConnected ? (
-            <Wifi className="h-5 w-5 text-green-400" />
-          ) : (
-            <WifiOff className="h-5 w-5 text-red-400" />
-          )}
-          <span className={`text-sm ${isConnected ? 'text-green-400' : 'text-red-400'}`}>
-            {isConnected ? 'Connected' : 'Disconnected'}
-          </span>
+    <Card className="max-w-sm !bg-black border-gray-700">
+      <CardHeader className="pt-6">
+        <div className="flex justify-between items-center">
+
+          <div className="flex items-center gap-4">
+            <p className="text-sm text-gray-300">Region: {regionData.regionName}</p>
+          </div>  
+            <div className="flex items-center gap-2">
+              {isConnected ? (
+                <Wifi className="h-5 w-5 text-green-400" />
+              ) : (
+                <WifiOff className="h-5 w-5 text-red-400" />
+              )}
+              <span className={`text-sm ${isConnected ? 'text-green-400' : 'text-red-400'}`}>
+                {isConnected ? 'Connected' : 'Disconnected'}
+              </span>
+            </div>
         </div>
       </CardHeader>
 
@@ -135,10 +141,10 @@ const PollutionMonitorCard = () => {
             <span className={`text-4xl font-bold ${getPpmColor(pollutionData?.ppm)}`}>
               {pollutionData?.ppm?.toFixed(1) || '0.0'}
             </span>
-            <span className="text-gray-400 ml-2">PPM</span>
+            <span className="text-gray-300 ml-2">PPM</span>
           </div>
           <div>
-            <span className="text-gray-400">Air Quality:</span>
+            <span className="text-gray-300">Air Quality:</span>
             <span className={`ml-2 font-medium ${getPpmColor(pollutionData?.ppm)}`}>
               {getAirQualityStatus(pollutionData?.ppm)}
             </span>
@@ -154,18 +160,18 @@ const PollutionMonitorCard = () => {
           </Alert>
         )}
 
-        <div className="grid grid-cols-2 gap-2 text-sm border-t border-gray-800 pt-4">
-          <div className="text-gray-400">Device ID:</div>
-          <div className="text-right text-gray-300">{pollutionData?.deviceId || 'N/A'}</div>
+        <div className="grid grid-cols-2 gap-2 text-sm border-t border-gray-700 pt-4">
+          <div className="text-gray-300">Device ID:</div>
+          <div className="text-right text-gray-200">{pollutionData?.deviceId || 'N/A'}</div>
           
-          <div className="text-gray-400">Last Updated:</div>
-          <div className="text-right text-gray-300">{formatTimestamp(pollutionData?.timestamp)}</div>
+          <div className="text-gray-300">Last Updated:</div>
+          <div className="text-right text-gray-200">{formatTimestamp(pollutionData?.timestamp)}</div>
           
-          <div className="text-gray-400">Region:</div>
-          <div className="text-right text-gray-300">{regionData.regionName}</div>
+          <div className="text-gray-300">Region:</div>
+          <div className="text-right text-gray-200">{regionData.regionName}</div>
           
-          <div className="text-gray-400">Last Processed:</div>
-          <div className="text-right text-gray-300">
+          <div className="text-gray-300">Last Processed:</div>
+          <div className="text-right text-gray-200">
             {lastProcessedData ? formatTimestamp(lastProcessedData.timestamp) : 'N/A'}
           </div>
         </div>

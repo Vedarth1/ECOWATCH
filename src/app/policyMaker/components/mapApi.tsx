@@ -123,7 +123,8 @@ const SearchableMap = () => {
       setIsLoadingRegions(true);
       setError(null);
       const response = await axios.get('http://localhost:8000/api/allregions');
-      setRegions(response.data);
+      // Only use the regions array from the response
+      setRegions(response.data.regions);
     } catch (err) {
       console.error('Error fetching regions:', err);
       setError('Failed to fetch regions data');
@@ -132,14 +133,13 @@ const SearchableMap = () => {
     }
   };
 
-  // Call fetchRegions when component mounts
   useEffect(() => {
     fetchRegions();
   }, []);
 
   const getCoordinatesForRegion = async (region) => {
     if (!geocoderRef.current) {
-      geocoderRef.current = new google.maps.Geocoder();
+      geocoderRef.current = new window.google.maps.Geocoder();
     }
 
     const address = `${region.region_name}, ${region.city}, ${region.state}`;
@@ -167,14 +167,14 @@ const SearchableMap = () => {
         markers.forEach(marker => marker.setMap(null));
         
         const newMarkers = [];
-        const bounds = new google.maps.LatLngBounds();
+        const bounds = new window.google.maps.LatLngBounds();
         let hasValidMarkers = false;
 
         for (const region of regions) {
           const position = await getCoordinatesForRegion(region);
           if (!position) continue;
 
-          const { AdvancedMarkerElement } = google.maps.marker;
+          const { AdvancedMarkerElement } = window.google.maps.marker;
           
           // Create pulsing dot marker
           const pulsingDot = createPulsingDot();
@@ -184,7 +184,7 @@ const SearchableMap = () => {
             map,
             content: pulsingDot,
             title: region.region_name,
-            zIndex: 1000 // Keep dots above other map elements
+            zIndex: 1000
           });
 
           // Create info window content
@@ -202,7 +202,7 @@ const SearchableMap = () => {
           `;
 
           // Add click listener for info window
-          const infoWindow = new google.maps.InfoWindow({
+          const infoWindow = new window.google.maps.InfoWindow({
             content
           });
 

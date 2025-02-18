@@ -12,6 +12,49 @@ const Reports = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    const fetchVehicles = async () => {
+      if (!regionData?.regionName) {
+        setError('No region selected');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        const encodedRegionName = encodeURIComponent(regionData.regionName);
+        const response = await fetch(`http://localhost:8000/api/region/${encodedRegionName}/vehicles`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({
+            message: 'Failed to fetch vehicle data'
+          }));
+          throw new Error(errorData.message || 'Failed to fetch vehicle data');
+        }
+
+        const data = await response.json();
+        
+        if (!data.success) {
+          throw new Error(data.message || 'Failed to fetch vehicle data');
+        }
+
+        setVehicles(formatData(data));
+      } catch (err) {
+        console.error('Error fetching vehicles:', err);
+        setError(err.message || 'Failed to fetch vehicle data');
+        setVehicles([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (regionData?.regionName) {
       fetchVehicles();
     } else {
@@ -19,45 +62,6 @@ const Reports = () => {
       setLoading(false);
     }
   }, [regionData?.regionName]);
-
-  const fetchVehicles = async () => {
-    if (!regionData?.regionName) return;
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      const encodedRegionName = encodeURIComponent(regionData.regionName);
-      const response = await fetch(`http://localhost:8000/api/region/${encodedRegionName}/vehicles`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({
-          message: 'Failed to fetch vehicle data'
-        }));
-        throw new Error(errorData.message || 'Failed to fetch vehicle data');
-      }
-
-      const data = await response.json();
-      
-      if (!data.success) {
-        throw new Error(data.message || 'Failed to fetch vehicle data');
-      }
-
-      setVehicles(formatData(data));
-    } catch (err) {
-      console.error('Error fetching vehicles:', err);
-      setError(err.message || 'Failed to fetch vehicle data');
-      setVehicles([]);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const formatData = (response) => {
     if (!response?.response) return [];
@@ -74,6 +78,50 @@ const Reports = () => {
         puccNo: item.vehicle_pucc_details.pucc_no
       }
     }));
+  };
+
+  const handleRefresh = () => {
+    if (regionData?.regionName) {
+      // We need to recreate the fetch function since it's now inside the useEffect
+      const fetchData = async () => {
+        try {
+          setLoading(true);
+          setError(null);
+
+          const encodedRegionName = encodeURIComponent(regionData.regionName);
+          const response = await fetch(`http://localhost:8000/api/region/${encodedRegionName}/vehicles`, {
+            method: 'GET',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({
+              message: 'Failed to fetch vehicle data'
+            }));
+            throw new Error(errorData.message || 'Failed to fetch vehicle data');
+          }
+
+          const data = await response.json();
+          
+          if (!data.success) {
+            throw new Error(data.message || 'Failed to fetch vehicle data');
+          }
+
+          setVehicles(formatData(data));
+        } catch (err) {
+          console.error('Error fetching vehicles:', err);
+          setError(err.message || 'Failed to fetch vehicle data');
+          setVehicles([]);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchData();
+    }
   };
 
   if (!regionData?.regionName) {
@@ -94,7 +142,7 @@ const Reports = () => {
           </p>
         </div>
         <button
-          onClick={fetchVehicles}
+          onClick={handleRefresh}
           disabled={loading}
           className={`px-4 py-2 rounded-lg text-sm ${
             loading 

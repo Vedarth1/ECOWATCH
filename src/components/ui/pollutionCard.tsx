@@ -25,7 +25,6 @@ const PollutionMonitorCard = () => {
   const [processingError, setProcessingError] = useState(null);
   const retryTimeoutRef = useRef(null);
 
-  // Rest of the hooks and callbacks remain the same...
   const processWithRetry = useCallback(async (regionName, ppm, timestamp, retryCount = 0) => {
     try {
       await savePpmData(regionName, ppm);
@@ -50,7 +49,11 @@ const PollutionMonitorCard = () => {
   }, []);
 
   useEffect(() => {
-    if (pollutionData && typeof pollutionData.ppm === 'number' && regionData?.regionName) {
+    // Check if we have valid data to process
+    const isValidPpm = pollutionData && typeof pollutionData.ppm === 'number';
+    const isValidRegion = regionData && regionData.regionName;
+
+    if (isValidPpm && isValidRegion) {
       if (retryTimeoutRef.current) {
         clearTimeout(retryTimeoutRef.current);
       }
@@ -62,12 +65,12 @@ const PollutionMonitorCard = () => {
       );
     } else if (pollutionData || regionData) {
       logger.warn('Missing required data for processing', {
-        hasPpm: typeof pollutionData?.ppm === 'number',
+        hasPpm: isValidPpm,
         ppmValue: pollutionData?.ppm,
-        hasRegionName: !!regionData?.regionName
+        hasRegionName: isValidRegion
       });
     }
-  }, [pollutionData, regionData?.regionName, processWithRetry]);
+  }, [pollutionData, regionData, processWithRetry]); // Added regionData to dependencies
 
   useEffect(() => {
     return () => {
@@ -118,20 +121,19 @@ const PollutionMonitorCard = () => {
     <Card className="max-w-sm !bg-black border-gray-700">
       <CardHeader className="pt-6">
         <div className="flex justify-between items-center">
-
           <div className="flex items-center gap-4">
             <p className="text-sm text-gray-300">Region: {regionData.regionName}</p>
           </div>  
-            <div className="flex items-center gap-2">
-              {isConnected ? (
-                <Wifi className="h-5 w-5 text-green-400" />
-              ) : (
-                <WifiOff className="h-5 w-5 text-red-400" />
-              )}
-              <span className={`text-sm ${isConnected ? 'text-green-400' : 'text-red-400'}`}>
-                {isConnected ? 'Connected' : 'Disconnected'}
-              </span>
-            </div>
+          <div className="flex items-center gap-2">
+            {isConnected ? (
+              <Wifi className="h-5 w-5 text-green-400" />
+            ) : (
+              <WifiOff className="h-5 w-5 text-red-400" />
+            )}
+            <span className={`text-sm ${isConnected ? 'text-green-400' : 'text-red-400'}`}>
+              {isConnected ? 'Connected' : 'Disconnected'}
+            </span>
+          </div>
         </div>
       </CardHeader>
 

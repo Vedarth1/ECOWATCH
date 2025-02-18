@@ -225,7 +225,7 @@ const SearchableMap = () => {
     };
 
     setupMarkers();
-  }, [map, regions, isLoaded]);
+  }, [map, regions, isLoaded, markers]);
 
   const onMapLoad = (mapInstance) => {
     setMap(mapInstance);

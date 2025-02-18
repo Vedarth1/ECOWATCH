@@ -7,10 +7,12 @@ import { useWebSocketContext } from '@/context/WebSocketContext';
 import AirQualityChart from './components/airQuality';
 import SearchableMap from './components/mapApi';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '../../components/ui/button';  // Added Button import
 
 import { AlertTriangle, Activity } from 'lucide-react';
 
 const PolicyMaker = () => {
+  // Rest of the component code remains exactly the same...
   const router = useRouter();
   const [vehicleCounts, setVehicleCounts] = useState([]);
   const [loading, setLoading] = useState(true);

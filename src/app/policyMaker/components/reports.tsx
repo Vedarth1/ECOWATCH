@@ -34,7 +34,7 @@ const Reports = () => {
     };
 
     loadStoredData();
-  }, []);
+  }, [STORAGE_KEY, EXPIRY_KEY, EXPIRY_TIME]); // Added EXPIRY_TIME to dependency array
 
   useEffect(() => {
     if (validationResponse) {
@@ -50,7 +50,7 @@ const Reports = () => {
         console.error('Error storing data:', error);
       }
     }
-  }, [validationResponse]);
+  }, [validationResponse, STORAGE_KEY, EXPIRY_KEY, EXPIRY_TIME]); // Added EXPIRY_TIME to dependency array
 
   const formatData = (response) => {
     if (!response?.response) return [];

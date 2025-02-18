@@ -7,7 +7,7 @@ import { useWebSocketContext } from '@/context/WebSocketContext';
 import AirQualityChart from './components/airQuality';
 import SearchableMap from './components/mapApi';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '../../components/ui/button';  // Added Button import
+import { Button } from '@/components/ui/button';  // Added Button import
 
 import { AlertTriangle, Activity } from 'lucide-react';
 

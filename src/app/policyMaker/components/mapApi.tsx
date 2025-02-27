@@ -109,8 +109,10 @@ const SearchableMap = () => {
   const [markers, setMarkers] = useState([]);
   const [isLoadingRegions, setIsLoadingRegions] = useState(true);
   const [error, setError] = useState(null);
+  const [initialBoundsFit, setInitialBoundsFit] = useState(false);
   const autocompleteRef = useRef(null);
   const geocoderRef = useRef(null);
+  const markersLoadedRef = useRef(false);
 
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: MAP_API_KEY,
@@ -160,9 +162,20 @@ const SearchableMap = () => {
     }
   };
 
+  // Track user-initiated zooming
+  const handleZoomChanged = () => {
+    if (map && markersLoadedRef.current) {
+      // Only update the zoom state if it's a user-initiated zoom
+      const currentZoom = map.getZoom();
+      if (currentZoom !== zoom) {
+        setZoom(currentZoom);
+      }
+    }
+  };
+
   useEffect(() => {
     const setupMarkers = async () => {
-      if (map && regions.length > 0 && isLoaded) {
+      if (map && regions.length > 0 && isLoaded && !markersLoadedRef.current) {
         // Clear existing markers
         markers.forEach(marker => marker.setMap(null));
         
@@ -217,18 +230,44 @@ const SearchableMap = () => {
 
         setMarkers(newMarkers);
 
-        // Fit bounds if we have valid markers
-        if (hasValidMarkers) {
+        // Fit bounds if we have valid markers - but only once on initial load
+        if (hasValidMarkers && !initialBoundsFit) {
           map.fitBounds(bounds);
+          
+          // Add a listener to detect when the bounds fitting is complete
+          google.maps.event.addListenerOnce(map, 'bounds_changed', () => {
+            // Set a flag indicating we've done the initial bounds fit
+            setInitialBoundsFit(true);
+            markersLoadedRef.current = true;
+            
+            // After bounds fitting completes, limit the zoom level if it's too zoomed in
+            const currentZoom = map.getZoom();
+            if (currentZoom > 15) {
+              map.setZoom(15);
+            }
+          });
         }
       }
     };
 
     setupMarkers();
-  }, [map, regions, isLoaded, markers]);
+  }, [map, regions, isLoaded]);
 
   const onMapLoad = (mapInstance) => {
     setMap(mapInstance);
+    
+    // Add zoom_changed listener
+    mapInstance.addListener('zoom_changed', handleZoomChanged);
+    
+    // Add dragend listener to update center when user drags the map
+    mapInstance.addListener('dragend', () => {
+      if (markersLoadedRef.current) {
+        setCenter({
+          lat: mapInstance.getCenter().lat(),
+          lng: mapInstance.getCenter().lng()
+        });
+      }
+    });
   };
 
   const onLoad = (autocomplete) => {

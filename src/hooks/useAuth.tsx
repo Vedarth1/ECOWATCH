@@ -7,6 +7,7 @@ interface AuthResponse {
   status: string;
   message: string;
   token?: string;
+  user_type?: string;
   error?: string;
 }
 
@@ -38,6 +39,7 @@ export const useAuth = () => {
       // Set the token in localStorage and axios default headers
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
+        localStorage.setItem("userType", userType); // Store user type
         axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.token}`;
       }
 
@@ -72,6 +74,7 @@ export const useAuth = () => {
       // Set the token in localStorage and axios default headers (if token is returned on signup)
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
+        localStorage.setItem("userType", userType); // Store user type
         axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.token}`;
       }
 
@@ -87,6 +90,7 @@ export const useAuth = () => {
   const logout = () => {
     // Clear the token from localStorage and axios default headers
     localStorage.removeItem("token");
+    localStorage.removeItem("userType");
     delete axios.defaults.headers.common["Authorization"];
   };
 

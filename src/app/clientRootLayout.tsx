@@ -51,6 +51,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
     if (token) {
       setIsLoggedIn(true);
       const storedRegion = localStorage.getItem("regionData");
+      const deviceSetupCompleted = localStorage.getItem("deviceSetupCompleted");
 
       if (!storedRegion) {
         setShowRegionForm(true);
@@ -60,7 +61,9 @@ function MainLayout({ children }: { children: React.ReactNode }) {
           const parsedRegion = JSON.parse(storedRegion);
           setRegionData(parsedRegion);
           setShowRegionForm(false);
-          setShowDeviceSetup(true);
+          
+          // Only show device setup if it hasn't been completed
+          setShowDeviceSetup(!deviceSetupCompleted);
         } catch (error) {
           console.error("Error parsing stored region data:", error);
           setShowRegionForm(true);
@@ -101,12 +104,14 @@ function MainLayout({ children }: { children: React.ReactNode }) {
 
   const handleDeviceSetupComplete = () => {
     setShowDeviceSetup(false);
+    localStorage.setItem("deviceSetupCompleted", "true");
     router.push("/dashboard");
   };
 
   const handleLogout = () => {
     logout();
     localStorage.removeItem("regionData");
+    localStorage.removeItem("deviceSetupCompleted"); // Remove device setup flag
     setShowRegionForm(false);
     setShowDeviceSetup(false);
     setIsLoggedIn(false);

@@ -6,7 +6,7 @@ import { Download } from "lucide-react";
 
 const Reports = () => {
   const { validationResponse, error } = useWebSocketContext();
-  const [displayData, setDisplayData] = useState(null);
+  const [displayData, setDisplayData] = useState([]);
   const STORAGE_KEY = 'vehicle_reports_data';
   const EXPIRY_KEY = 'vehicle_reports_expiry';
   const EXPIRY_TIME = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
@@ -34,23 +34,60 @@ const Reports = () => {
     };
 
     loadStoredData();
-  }, [STORAGE_KEY, EXPIRY_KEY, EXPIRY_TIME]); // Added EXPIRY_TIME to dependency array
+  }, []);
 
   useEffect(() => {
-    if (validationResponse) {
-      // Update state
-      setDisplayData(validationResponse);
+    if (validationResponse?.response) {
+      // Create a unique identifier for each vehicle based on registration number
+      const newVehicles = validationResponse.response.map(vehicle => ({
+        ...vehicle,
+        uniqueId: vehicle.reg_no // Using registration number as unique ID
+      }));
+      
+      // Merge existing and new data, keeping only unique entries
+      setDisplayData(prevData => {
+        // If prevData is null or doesn't have an array structure, initialize it
+        const currentData = Array.isArray(prevData?.response) ? 
+          prevData.response.map(vehicle => ({
+            ...vehicle,
+            uniqueId: vehicle.reg_no
+          })) : [];
+        
+        // Combine current data with new vehicles
+        const combinedData = [...currentData];
+        
+        // Add only vehicles that don't already exist in our data
+        newVehicles.forEach(newVehicle => {
+          const exists = combinedData.some(
+            existingVehicle => existingVehicle.uniqueId === newVehicle.uniqueId
+          );
+          
+          if (!exists) {
+            combinedData.push(newVehicle);
+          }
+        });
+        
+        // Return in the same format as validationResponse
+        return { 
+          response: combinedData,
+          timestamp: new Date().toISOString()
+        };
+      });
 
       try {
-        // Store in localStorage with expiry
+        // Store updated data in localStorage with expiry
+        const updatedData = displayData ? 
+          { response: [...displayData.response, ...newVehicles] } : 
+          { response: newVehicles };
+          
         const expiryTime = new Date().getTime() + EXPIRY_TIME;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(validationResponse));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
         localStorage.setItem(EXPIRY_KEY, expiryTime.toString());
       } catch (error) {
         console.error('Error storing data:', error);
       }
     }
-  }, [validationResponse, STORAGE_KEY, EXPIRY_KEY, EXPIRY_TIME]); // Added EXPIRY_TIME to dependency array
+  }, [validationResponse]);
 
   const formatData = (response) => {
     if (!response?.response) return [];
@@ -128,7 +165,7 @@ const Reports = () => {
     try {
       localStorage.removeItem(STORAGE_KEY);
       localStorage.removeItem(EXPIRY_KEY);
-      setDisplayData(null);
+      setDisplayData({ response: [] });
     } catch (error) {
       console.error('Error clearing stored data:', error);
     }
@@ -137,21 +174,29 @@ const Reports = () => {
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-bold">Detected Vehicles</h1>
-        <div className="flex gap-2">
-          <button
-            onClick={exportToCSV}
-            disabled={formattedData.length === 0}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
-              ${formattedData.length === 0 
-                ? 'bg-black cursor-not-allowed' 
-                : 'bg-gray-900 hover:bg-blue-700 text-white'}`}
-          >
-            <Download size={16} />
-            Export CSV
-          </button>
-        </div>
-      </div>
+  <h1 className="text-xl font-bold text-white">Detected Vehicles</h1>
+  <div className="flex gap-3">
+    <button
+      onClick={exportToCSV}
+      disabled={formattedData.length === 0}
+      className={`flex items-center justify-center gap-2 px-5 py-2 rounded text-sm font-medium border transition-all duration-200
+        ${formattedData.length === 0 
+          ? 'bg-transparent border-gray-700 text-gray-500 cursor-not-allowed' 
+          : 'bg-transparent border-blue-600 text-blue-400 hover:bg-blue-900/30 hover:text-blue-300'}`}
+    >
+      <Download size={16} className="stroke-current" />
+      <span>Export CSV</span>
+    </button>
+    {displayData?.response?.length > 0 && (
+      <button
+        onClick={clearStoredData}
+        className="px-5 py-2 rounded text-sm font-medium bg-red-600/90 hover:bg-red-700 text-white shadow-sm hover:shadow transition-all duration-200"
+      >
+        Clear All
+      </button>
+    )}
+  </div>
+</div>
       
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">

@@ -11,7 +11,7 @@ interface AuthResponse {
   error?: string;
 }
 
-const API_BASE_URL = "http://43.204.97.229:8000/api";
+const API_BASE_URL = "https://43.204.97.229:8000/api";
 
 export const useAuth = () => {
   const [loading, setLoading] = useState(false);

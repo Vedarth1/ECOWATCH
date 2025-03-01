@@ -28,7 +28,7 @@ const PolicyMaker = () => {
     const fetchData = async () => {
       try {
         console.log("Fetching data...");
-        const vehicleResponse = await fetch('https://43.204.97.229:8000/api/vehicle-count');
+        const vehicleResponse = await fetch('http://43.204.97.229:8000/api/vehicle-count');
 
         if (!vehicleResponse.ok) {
           throw new Error('Failed to fetch data');

@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import Progress from '../ui/progress';
 
-const API_BASE_URL = 'https://43.204.97.229:8000/api';
+const API_BASE_URL = 'http://43.204.97.229:8000/api';
 const AWS_API_URL = 'https://ng8br1qz4f.execute-api.ap-south-1.amazonaws.com/test';
 const API_2_URL = 'https://8w0p1ti7p4.execute-api.ap-south-1.amazonaws.com/prod';
 

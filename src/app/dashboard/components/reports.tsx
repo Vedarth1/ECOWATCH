@@ -9,7 +9,7 @@ const Reports = () => {
   const { regionData } = useRegion();
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null); // Explicitly define error state type
 
   useEffect(() => {
     const fetchVehicles = async () => {
@@ -48,7 +48,7 @@ const Reports = () => {
         setVehicles(formatData(data));
       } catch (err) {
         console.error('Error fetching vehicles:', err);
-        setError(err.message || 'Failed to fetch vehicle data');
+        setError(err instanceof Error ? err.message : 'Failed to fetch vehicle data');
         setVehicles([]);
       } finally {
         setLoading(false);
@@ -113,7 +113,7 @@ const Reports = () => {
           setVehicles(formatData(data));
         } catch (err) {
           console.error('Error fetching vehicles:', err);
-          setError(err.message || 'Failed to fetch vehicle data');
+          setError(err instanceof Error ? err.message : 'Failed to fetch vehicle data');
           setVehicles([]);
         } finally {
           setLoading(false);

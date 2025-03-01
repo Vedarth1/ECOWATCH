@@ -31,7 +31,7 @@ export const savePpmData = async (regionName: string, ppm_value: number): Promis
   try {
     const startTime = performance.now();
     
-    const response = await fetch('http://localhost:8000/api/ppm-value', {
+    const response = await fetch('http://43.204.97.229:8000/api/ppm-value', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

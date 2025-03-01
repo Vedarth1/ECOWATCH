@@ -24,7 +24,7 @@ const Reports = () => {
         setError(null);
 
         const encodedRegionName = encodeURIComponent(regionData.regionName);
-        const response = await fetch(`http://localhost:8000/api/region/${encodedRegionName}/vehicles`, {
+        const response = await fetch(`http://43.204.97.229:8000/api/region/${encodedRegionName}/vehicles`, {
           method: 'GET',
           headers: {
             'Accept': 'application/json',
@@ -89,7 +89,7 @@ const Reports = () => {
           setError(null);
 
           const encodedRegionName = encodeURIComponent(regionData.regionName);
-          const response = await fetch(`http://localhost:8000/api/region/${encodedRegionName}/vehicles`, {
+          const response = await fetch(`http://43.204.97.229:8000/api/region/${encodedRegionName}/vehicles`, {
             method: 'GET',
             headers: {
               'Accept': 'application/json',

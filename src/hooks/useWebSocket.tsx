@@ -11,7 +11,7 @@ const useWebSocket = () => {
 
   useEffect(() => {
     console.log("Initializing WebSocket connection");
-    const newSocket = io("http://localhost:8000"); 
+    const newSocket = io("http://43.204.97.229:8000"); 
     setSocket(newSocket);
 
     newSocket.on("connect", () => {

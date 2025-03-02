@@ -124,7 +124,7 @@ const SearchableMap = () => {
     try {
       setIsLoadingRegions(true);
       setError(null);
-      const response = await axios.get('http://43.204.97.229:8000/api/allregions');
+      const response = await axios.get('https://43.204.97.229:8000/api/allregions');
       // Only use the regions array from the response
       setRegions(response.data.regions);
     } catch (err) {

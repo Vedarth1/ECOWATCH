@@ -82,7 +82,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
       setIsLoading(true);
       const token = localStorage.getItem("token");
 
-      const response = await axios.post("https://43.204.97.229:8000/api/region", formData, {
+      const response = await axios.post("http://localhost:8000/api/region", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -168,7 +168,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.post("https://43.204.97.229:8000/api/puc", formData, {
+      const response = await axios.post("http://localhost:8000/api/puc", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",

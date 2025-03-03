@@ -25,7 +25,7 @@ export const useRegionStats = (regionName: string | undefined) => {
             }
 
             const response = await fetch(
-                `https://43.204.97.229:8000/api/regionStats/${encodeURIComponent(regionName)}`,
+                `http://localhost:8000/api/regionStats/${encodeURIComponent(regionName)}`,
                 {
                     method: 'GET',
                     headers: {

@@ -45,7 +45,7 @@ const ProblemRegionsPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("https://43.204.97.229:8000/api/allregions");
+        const response = await fetch("http://localhost:8000/api/allregions");
         if (!response.ok) {
           throw new Error("Failed to fetch data");
         }

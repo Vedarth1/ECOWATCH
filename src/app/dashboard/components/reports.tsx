@@ -4,12 +4,14 @@ import React, { useState, useEffect } from 'react';
 import { useWebSocketContext } from "../../../context/WebSocketContext";
 import { useRegion } from '../../../context/regionContext';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API; // Fetch from .env.local
+
 const Reports = () => {
   const { error: wsError } = useWebSocketContext();
   const { regionData } = useRegion();
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null); // Explicitly define error state type
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchVehicles = async () => {
@@ -24,7 +26,7 @@ const Reports = () => {
         setError(null);
 
         const encodedRegionName = encodeURIComponent(regionData.regionName);
-        const response = await fetch(`http://localhost:8000/api/region/${encodedRegionName}/vehicles`, {
+        const response = await fetch(`${API_BASE_URL}/region/${encodedRegionName}/vehicles`, {
           method: 'GET',
           headers: {
             'Accept': 'application/json',
@@ -82,14 +84,13 @@ const Reports = () => {
 
   const handleRefresh = () => {
     if (regionData?.regionName) {
-      // We need to recreate the fetch function since it's now inside the useEffect
       const fetchData = async () => {
         try {
           setLoading(true);
           setError(null);
 
           const encodedRegionName = encodeURIComponent(regionData.regionName);
-          const response = await fetch(`http://localhost:8000/api/region/${encodedRegionName}/vehicles`, {
+          const response = await fetch(`${API_BASE_URL}/region/${encodedRegionName}/vehicles`, {
             method: 'GET',
             headers: {
               'Accept': 'application/json',
@@ -185,13 +186,11 @@ const Reports = () => {
                   <td className="p-3 whitespace-normal break-words max-w-[150px] text-white">{item.model}</td>
                   <td className="p-3 whitespace-normal break-words max-w-[150px] text-white">{item.regNo}</td>
                   <td className="p-3">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        item.pucStatus === 'Valid' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}
-                    >
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                      item.pucStatus === 'Valid' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
                       {item.pucStatus}
                     </span>
                   </td>

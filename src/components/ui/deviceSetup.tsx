@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import Progress from '../ui/progress';
 
-const API_BASE_URL = 'http://localhost:8000/api';
+const BACKEND_API = process.env.NEXT_PUBLIC_BACKEND_API || 'http://localhost:8000/api';
 const AWS_API_URL = 'https://ng8br1qz4f.execute-api.ap-south-1.amazonaws.com/test';
 const API_2_URL = 'https://8w0p1ti7p4.execute-api.ap-south-1.amazonaws.com/prod';
 
@@ -27,7 +27,7 @@ const DeviceSetup = ({ onComplete }) => {
     verifyAuthHeaders();
     const fetchPorts = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/ports`);
+        const response = await axios.get(`${BACKEND_API}/ports`);
         if (response.data.success) {
           setAvailablePorts(response.data.ports);
           if (response.data.ports.length > 0 && !selectedPort) {
@@ -140,7 +140,7 @@ const DeviceSetup = ({ onComplete }) => {
       // Check status - Fixed to handle API Gateway response format
       try {
         const statusResponse = await axios.post(
-          `${API_2_URL}/status`,
+          `${BACKEND_API}/status`,
           {
             userId,
             deviceId: customDeviceId
@@ -185,7 +185,7 @@ const DeviceSetup = ({ onComplete }) => {
             portPath: selectedPort
           });
 
-          const flashResponse = await axios.post(`${API_BASE_URL}/flash`, {
+          const flashResponse = await axios.post(`${BACKEND_API}/flash`, {
             firmwareUrl: responseBody.firmwareUrl,
             portPath: selectedPort
           });

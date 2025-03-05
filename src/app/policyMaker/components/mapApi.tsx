@@ -6,6 +6,7 @@ import axios from 'axios';
 
 const MAP_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'YOUR_API_KEY';
 const MAP_ID = process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID || 'YOUR_MAP_ID';
+const BACKEND_API = process.env.NEXT_PUBLIC_BACKEND_API || 'http://localhost:8000/api';
 
 const libraries = ['places', 'marker'];
 
@@ -124,7 +125,7 @@ const SearchableMap = () => {
     try {
       setIsLoadingRegions(true);
       setError(null);
-      const response = await axios.get('http://localhost:8000/api/allregions');
+      const response = await axios.get(`${BACKEND_API}/allregions`);
       // Only use the regions array from the response
       setRegions(response.data.regions);
     } catch (err) {

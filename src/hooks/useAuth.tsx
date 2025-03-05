@@ -11,7 +11,7 @@ interface AuthResponse {
   error?: string;
 }
 
-const API_BASE_URL = "http://localhost:8000/api";
+const BACKEND_API = process.env.NEXT_PUBLIC_BACKEND_API || 'http://localhost:8000/api';
 
 export const useAuth = () => {
   const [loading, setLoading] = useState(false);
@@ -30,7 +30,7 @@ export const useAuth = () => {
       setLoading(true);
       setError(null);
 
-      const response = await axios.post<AuthResponse>(`${API_BASE_URL}/login`, {
+      const response = await axios.post<AuthResponse>(`${BACKEND_API}/login`, {
         email,
         password,
         user_type: userType,
@@ -63,7 +63,7 @@ export const useAuth = () => {
       setLoading(true);
       setError(null);
 
-      const response = await axios.post<AuthResponse>(`${API_BASE_URL}/signup`, {
+      const response = await axios.post<AuthResponse>(`${BACKEND_API}/signup`, {
         username,
         email,
         password,

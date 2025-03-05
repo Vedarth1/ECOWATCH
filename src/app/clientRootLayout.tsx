@@ -13,6 +13,8 @@ import { useAuth } from "@/hooks/useAuth";
 import axios from "axios";
 import DeviceSetup from "../components/ui/deviceSetup"; // Import the new component
 
+const BACKEND_API = process.env.NEXT_PUBLIC_BACKEND_API || 'http://localhost:8000/api';
+
 const CameraComponent = dynamic(() => import("../components/utils/cameraUtility"), { ssr: false });
 const RegionForm = dynamic(() => import("../components/utils/regionFormUtility"), { ssr: false });
 
@@ -82,7 +84,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
       setIsLoading(true);
       const token = localStorage.getItem("token");
 
-      const response = await axios.post("http://localhost:8000/api/region", formData, {
+      const response = await axios.post(`${BACKEND_API}/region`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -168,7 +170,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.post("http://localhost:8000/api/puc", formData, {
+      const response = await axios.post(`${BACKEND_API}/puc`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",

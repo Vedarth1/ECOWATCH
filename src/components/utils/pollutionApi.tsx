@@ -10,6 +10,7 @@ interface ApiResponse {
   data?: any;
 }
 
+const BACKEND_API = process.env.NEXT_PUBLIC_BACKEND_API || 'http://localhost:8000/api';
 export const savePpmData = async (regionName: string, ppm_value: number): Promise<ApiResponse> => {
   const requestId = `ppm_${Date.now()}`;
   
@@ -31,7 +32,7 @@ export const savePpmData = async (regionName: string, ppm_value: number): Promis
   try {
     const startTime = performance.now();
     
-    const response = await fetch('http://localhost:8000/api/ppm-value', {
+    const response = await fetch(`${BACKEND_API}/ppm-value`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

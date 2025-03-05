@@ -26,7 +26,7 @@ export const WebSocketProvider: FC<{ children: ReactNode }> = ({ children }) => 
 
   useEffect(() => {
     console.log("Initializing WebSocket connection");
-    const newSocket = io("http://localhost:8000");
+    const newSocket = io("http://13.232.255.41:8000");
     setSocket(newSocket);
 
     newSocket.on("connect", () => {

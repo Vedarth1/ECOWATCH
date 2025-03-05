@@ -10,6 +10,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/Button'  // Added Button import
 
 import { AlertTriangle, Activity } from 'lucide-react';
+const BACKEND_API = process.env.NEXT_PUBLIC_BACKEND_API || 'http://localhost:8000/api';
 
 const PolicyMaker = () => {
   // Rest of the component code remains exactly the same...
@@ -28,7 +29,7 @@ const PolicyMaker = () => {
     const fetchData = async () => {
       try {
         console.log("Fetching data...");
-        const vehicleResponse = await fetch('http://localhost:8000/api/vehicle-count');
+        const vehicleResponse = await fetch(`${BACKEND_API}/vehicle-count`);
 
         if (!vehicleResponse.ok) {
           throw new Error('Failed to fetch data');

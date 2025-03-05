@@ -5,6 +5,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
 import { Button } from '@/components/ui/Button'
 
+const BACKEND_API = process.env.NEXT_PUBLIC_BACKEND_API || 'http://localhost:8000/api';
+
 const ProblemRegionsPage = () => {
   const router = useRouter();
   const [problemRegions, setProblemRegions] = useState([]);
@@ -45,7 +47,7 @@ const ProblemRegionsPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/allregions");
+        const response = await fetch(`${BACKEND_API}/allregions`);
         if (!response.ok) {
           throw new Error("Failed to fetch data");
         }

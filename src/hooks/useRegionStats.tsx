@@ -4,7 +4,7 @@
 // hooks/useRegionStats.ts
 import { useState, useEffect, useCallback } from 'react';
 import { RegionStats } from '../types/regionStats';
-
+const BACKEND_API = process.env.NEXT_PUBLIC_BACKEND_API || 'http://localhost:8000/api';
 export const useRegionStats = (regionName: string | undefined) => {
     const [regionStats, setRegionStats] = useState<RegionStats | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
@@ -25,7 +25,7 @@ export const useRegionStats = (regionName: string | undefined) => {
             }
 
             const response = await fetch(
-                `http://localhost:8000/api/regionStats/${encodeURIComponent(regionName)}`,
+                `${BACKEND_API}/regionStats/${encodeURIComponent(regionName)}`,
                 {
                     method: 'GET',
                     headers: {

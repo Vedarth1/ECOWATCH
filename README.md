@@ -97,14 +97,10 @@ ECOWATCH/
 
 ## Environment Variables
 
-Create a `.env.local` file in the root directory with the following variables:
+Create a `.env.local` file in the root directory with the following variables: contact on given email
 
 ```
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=AIzaSyB4kBCwqRD1DzTooYoqxPySHGPD8oXedC8
-NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID=ff4956cb30ca3755
-NEXT_PUBLIC_BACKEND_API=http://localhost:8000/api
-NEXT_PUBLIC_AIR_QUALITY_API_KEY=AIzaSyAAyEiKhdF40LTZCGD1dpgKuSrCPAIy1VA
-NEXT_PUBLIC_GEOCODING_API_KEY=AIzaSyDHbp5V2HF69i2QUnS8QhUQYBi7KtUO9GI
+vinayrewatkar.257@gmail.com
 ```
 
 ## Contribution Guidelines
